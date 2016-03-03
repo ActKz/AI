@@ -58,6 +58,18 @@ class CleanerAgent(Agent):
     def getAction(self, state):
         "The agent receives a GameState (defined in pacman.py)."
         "[Project 1] YOUR CODE HERE"
+
+        foodPos=state.getFood()
+        pacmanPos=state.getPacmanPosition()
+
+        if foodPos[pacmanPos[0]][pacmanPos[1]-1]:
+            return Directions.SOUTH
+        elif foodPos[pacmanPos[0]][pacmanPos[1]+1]:
+            return Directions.NORTH
+        elif foodPos[pacmanPos[0]+1][pacmanPos[1]]:
+            return Directions.EAST
+
+
         return Directions.STOP
 
 "P1-2"
@@ -67,6 +79,10 @@ class FroggerAgent(Agent):
     def getAction(self, state):
         "The agent receives a GameState (defined in pacman.py)."
         "[Project 1] YOUR CODE HERE"
+        foodPos=state.getFood()
+        pacmanPos=state.getPacmanPosition()
+        ghostPos=state.getGhostPosition(1)
+        print ghostPos
 
         return Directions.STOP
 
