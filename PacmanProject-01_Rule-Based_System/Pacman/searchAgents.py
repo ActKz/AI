@@ -79,10 +79,24 @@ class FroggerAgent(Agent):
     def getAction(self, state):
         "The agent receives a GameState (defined in pacman.py)."
         "[Project 1] YOUR CODE HERE"
-        foodPos=state.getFood()
+        food=(8,1)
+        walls=state.getWalls()
         pacmanPos=state.getPacmanPosition()
-        ghostPos=state.getGhostPosition(1)
-        print ghostPos
+        blueGhostPos=state.getGhostPosition(1)
+        orangeGhostPos=state.getGhostPosition(2)
+        blueGhostDir=state.getGhostState(1).getDirection()
+        orangeGhostDir=state.getGhostState(2).getDirection()
+
+        if pacmanPos[1] - blueGhostPos[1] ==1 and abs(pacmanPos[0]-blueGhostPos[0])<2\
+        or pacmanPos[0] - orangeGhostPos[0] ==-1 and abs(pacmanPos[1]-orangeGhostPos[1])<2:
+                return Directions.STOP
+
+
+        if Directions.SOUTH in state.getLegalPacmanActions() and\
+                True not in walls[pacmanPos[1]-1][pacmanPos[0]:-2]:
+            return Directions.SOUTH
+        elif Directions.EAST in state.getLegalPacmanActions():
+            return Directions.EAST
 
         return Directions.STOP
 
