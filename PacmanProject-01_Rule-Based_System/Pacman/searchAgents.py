@@ -87,11 +87,21 @@ class FroggerAgent(Agent):
         blueGhostDir=state.getGhostState(1).getDirection()
         orangeGhostDir=state.getGhostState(2).getDirection()
 
-        if pacmanPos[1] - blueGhostPos[1] ==1 and abs(pacmanPos[0]-blueGhostPos[0])<2\
-        or pacmanPos[0] - orangeGhostPos[0] ==-1 and abs(pacmanPos[1]-orangeGhostPos[1])<2:
-                return Directions.STOP
+        #躲藍鬼
+        #如果藍鬼在絕對值2的範圍內
+        if pacmanPos[1] - blueGhostPos[1] ==1 and abs(pacmanPos[0]-blueGhostPos[0])<2:
+            #這個是鬼已經超過你，可以趕快下去
+            if (blueGhostPos[0]>pacmanPos[0] and blueGhostDir==Directions.EAST):
+                return Directions.SOUTH
+            return Directions.STOP
+        #躲橘鬼
+        if pacmanPos[0] - orangeGhostPos[0] ==-1 and abs(pacmanPos[1]-orangeGhostPos[1])<2:
+            #這個是鬼已經超過你，可以趕快下去
+            if orangeGhostPos[1]>pacmanPos[1] and blueGhostDir==Directions.NORTH:
+                return Directions.EAST
+            return Directions.STOP
 
-
+        #行走路徑
         if Directions.SOUTH in state.getLegalPacmanActions() and\
                 True not in walls[pacmanPos[1]-1][pacmanPos[0]:-2]:
             return Directions.SOUTH
