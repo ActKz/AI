@@ -84,28 +84,44 @@ class FroggerAgent(Agent):
             return Directions.STOP
         else:
             pos = state.getPacmanPosition()
-            if pos[0] < 4:
+            if pos[0] < 2:
                 return Directions.EAST
             if pos[1] > 6:
                 return Directions.SOUTH
+            g1pos = state.getGhostPosition(1)
+            g2pos = state.getGhostPosition(2)
+            g1dir = state.getGhostState(1).getDirection()
+            g2dir = state.getGhostState(2).getDirection()
             if pos[1] == 6:
-                if state.getGhostPosition(1)[0] >= 7:
-                    return Directions.SOUTH
+                if g1dir == "West":
+                    if g1pos[0] <= 4:
+                        return Directions.STOP
+                    else:
+                        return Directions.SOUTH
                 else:
-                    return Directions.STOP
+                    if g1pos[0] >= 3:
+                        return Directions.SOUTH
+                    else:
+                        return Directions.STOP
             if 2 < pos[1] <= 5:
                 return Directions.SOUTH
-            if pos[1] == 2 and pos[0] == 4:
-                if state.getGhostPosition(2)[1] >= 7:
-                    return Directions.EAST
+            if pos[0] < 5:
+                return Directions.EAST
+            if pos[0] < 6:
+                if g2dir == "South":
+                    if g2pos[1] >= 5:
+                        return Directions.EAST
+                    else:
+                        return Directions.STOP
                 else:
-                    return Directions.STOP
-            elif pos[0] > 4:
-                if pos[0] == 8:
-                    return Directions.SOUTH
-                else:
-                    return Directions.EAST
-            return Directions.STOP
+                    if g2pos[1] >= 3:
+                        return Directions.EAST
+                    else:
+                        return Directions.STOP
+            elif pos[0] < 8:
+                return Directions.EAST
+            else:
+                return Directions.SOUTH
         
 "P1-3"
 class SnakeAgent(Agent):
@@ -114,7 +130,30 @@ class SnakeAgent(Agent):
     def getAction(self, state):
         "The agent receives a GameState (defined in pacman.py)."
         "[Project 1] YOUR CODE HERE"
+#       g1pos = state.getGhostPosition(1)
+#       g2pos = state.getGhostPosition(2)
+#       g1dir = state.getGhostState(1).getDirection()
+#       g2dir = state.getGhostState(2).getDirection()
+#       ppos = state.getPacmanPosition()
+#       if g1pos[1] == g2pos[1] == ppos[1]:
+#           if ppos[0] < g1pos[0] and ppos[0] < g2pos[0]:
+#               if Directions.SOUTH in state.getLegalPacmanActions():
+#                   return Directions.SOUTH
+#               elif Directions.NORTH in state.getLegalPacmanActions():
+#                   return Directions.NORTH
+#               else:
+#                   return Directions.EAST
+#           elif g1pos[0] < ppos[0] < g2pos[0] or g1pos[0] > ppos[0] > g2pos[0]:
+#               if g1
+#       else:
+#           if (g1St.getDirection() == 'East' and g2St.getPosition() == (1.0,3.0)) or (g2St.getDirection() == 'East' and g1St.getPosition() == (1.0,3.0)):
+#               if ppos[1] == 4:
+#                   return Directions.SOUTH
+#               else:
+#                   return Directions.NORTH
+#               
         return Directions.STOP
+            
         
 "P1-4"
 class DodgeAgent(Agent):
