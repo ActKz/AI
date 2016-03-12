@@ -80,49 +80,99 @@ class FroggerAgent(Agent):
     def getAction(self, state):
         "The agent receives a GameState (defined in pacman.py)."
         "[Project 1] YOUR CODE HERE"
+        #Ghost 1:start point(4, 5)
+        #       Direction: EAST / WEST
+        #Ghost 2:start point(6, 2)
+        #       Direction: SOUTH / NORTH
         if state.getNumFood() == 0:
             return Directions.STOP
         else:
             pos = state.getPacmanPosition()
-            if pos[0] < 2:
-                return Directions.EAST
-            if pos[1] > 6:
-                return Directions.SOUTH
             g1pos = state.getGhostPosition(1)
             g2pos = state.getGhostPosition(2)
             g1dir = state.getGhostState(1).getDirection()
             g2dir = state.getGhostState(2).getDirection()
-            if pos[1] == 6:
-                if g1dir == "West":
-                    if g1pos[0] <= 4:
-                        return Directions.STOP
-                    else:
-                        return Directions.SOUTH
-                else:
-                    if g1pos[0] >= 3:
-                        return Directions.SOUTH
-                    else:
-                        return Directions.STOP
-            if 2 < pos[1] <= 5:
-                return Directions.SOUTH
-            if pos[0] < 5:
+            print g2pos, g2dir
+            if pos == (1,8):
                 return Directions.EAST
-            if pos[0] < 6:
-                if g2dir == "South":
-                    if g2pos[1] >= 5:
-                        return Directions.EAST
+            elif pos == (2,8):
+                if g1dir == "East":
+                    if g2dir == "South":
+                        self.pat = 1
                     else:
-                        return Directions.STOP
+                        self.pat = 2
+                    return Directions.SOUTH
                 else:
-                    if g2pos[1] >= 3:
-                        return Directions.EAST
+                    if g2dir == "North":
+                        self.pat = 3
                     else:
-                        return Directions.STOP
-            elif pos[0] < 8:
-                return Directions.EAST
+                        self.pat = 4
+                    return Directions.SOUTH
             else:
-                return Directions.SOUTH
-        
+                if self.pat == 1:
+                    if pos[1]>2:
+                        return Directions.SOUTH
+                    elif pos[0]<8:
+                        return Directions.EAST
+                    elif pos[1]>1:
+                        return Directions.SOUTH
+                    else:
+                        return Directions.STOP
+                elif self.pat == 2:
+                    if pos[1]>2:
+                        return Directions.SOUTH
+                    elif pos[0]<8:
+                        return Directions.EAST
+                    elif pos[1]>1:
+                        return Directions.SOUTH
+                    else:
+                        return Directions.STOP
+                elif self.pat == 3:
+                    if pos[1] > 6:
+                        return Directions.SOUTH
+                    elif pos[1] == 6:
+                       if g1pos[0] > 2 and g2dir == "East":
+                           return Directions.SOUTH
+                       elif g1pos[0] > 3:
+                           return Directions.SOUTH
+                       else:
+                           return Directions.STOP
+                    elif pos[1]>2:
+                        return Directions.SOUTH
+                    elif pos[0]<5:
+                        return Directions.EAST
+                    elif pos[0]==5:
+                        if g2pos[1]>2 and g2dir == "North":
+                            return Directions.EAST
+                        elif g2pos[1]>3:
+                            return Directions.EAST
+                        else:
+                            return Directions.STOP
+                    elif pos[0]<8:
+                        return Directions.EAST
+                    elif pos[1]>1:
+                        return Directions.SOUTH
+                    else:
+                        return Directions.STOP
+                else:
+                    if pos[0]<7:
+                        return Directions.EAST
+                    elif pos[1] == 6:
+                        if g1pos[0] <= 6 and g1dir == "West":
+                            return Directions.SOUTH
+                        elif g1pos[0] <= 5:
+                            return Directions.SOUTH
+                        else:
+                            return Directions.STOP
+                    elif pos[1]>2:
+                        return Directions.SOUTH
+                    elif pos[0]<8:
+                        return Directions.EAST
+                    elif pos[1]>1:
+                        return Directions.SOUTH
+                    else:
+                        return Directions.STOP
+
 "P1-3"
 class SnakeAgent(Agent):
     "But you don't have a sneaking suit."
