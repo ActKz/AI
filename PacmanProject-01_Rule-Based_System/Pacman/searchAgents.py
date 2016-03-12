@@ -180,30 +180,67 @@ class SnakeAgent(Agent):
     def getAction(self, state):
         "The agent receives a GameState (defined in pacman.py)."
         "[Project 1] YOUR CODE HERE"
-#       g1pos = state.getGhostPosition(1)
-#       g2pos = state.getGhostPosition(2)
-#       g1dir = state.getGhostState(1).getDirection()
-#       g2dir = state.getGhostState(2).getDirection()
-#       ppos = state.getPacmanPosition()
-#       if g1pos[1] == g2pos[1] == ppos[1]:
-#           if ppos[0] < g1pos[0] and ppos[0] < g2pos[0]:
-#               if Directions.SOUTH in state.getLegalPacmanActions():
-#                   return Directions.SOUTH
-#               elif Directions.NORTH in state.getLegalPacmanActions():
-#                   return Directions.NORTH
-#               else:
-#                   return Directions.EAST
-#           elif g1pos[0] < ppos[0] < g2pos[0] or g1pos[0] > ppos[0] > g2pos[0]:
-#               if g1
-#       else:
-#           if (g1St.getDirection() == 'East' and g2St.getPosition() == (1.0,3.0)) or (g2St.getDirection() == 'East' and g1St.getPosition() == (1.0,3.0)):
-#               if ppos[1] == 4:
-#                   return Directions.SOUTH
-#               else:
-#                   return Directions.NORTH
-#               
-        return Directions.STOP
-            
+        g1pos = state.getGhostPosition(1)
+        g2pos = state.getGhostPosition(2)
+        g1dir = state.getGhostState(1).getDirection()
+        g2dir = state.getGhostState(2).getDirection()
+        pos = state.getPacmanPosition()
+        self.updateDistance(state)
+        if g1pos[1] == g2pos[1] == pos[1]:
+            if pos[0] < g1pos[0] and pos[0] < g2pos[0]:
+                if Directions.SOUTH in state.getLegalPacmanActions():
+                    return Directions.SOUTH
+                elif Directions.NORTH in state.getLegalPacmanActions():
+                    return Directions.NORTH
+                else:
+                    return Directions.EAST
+            elif g1pos[0] < pos[0] < g2pos[0] or g1pos[0] > pos[0] > g2pos[0]:
+                if pos[0] == 12:
+                    if Directions.SOUTH in state.getLegalPacmanActions():
+                        return Directions.SOUTH
+                    elif Directions.NORTH in state.getLegalPacmanActions():
+                        return Directions.NORTH
+                    else:
+                        return Directions.STOP
+                if g1dir == g2dir == "East":
+                    return Directions.EAST
+                elif g1dir == g2dir == "West":
+                    return Directions.WEST
+                elif (g1dir == 'East' and g2pos == (1.0,3.0)) or (g2dir == 'East' and g1pos == (1.0,3.0)):
+                    return Directions.EAST
+            else:
+                return Directions.EAST
+        else:
+            if (g1dir == 'East' and g2pos == (2.0,3.0)) or (g2dir == 'East' and g1pos == (2.0,3.0)):
+                if pos[1] == 4:
+                    return Directions.SOUTH
+                else:
+                    return Directions.NORTH
+            elif pos[0] == 12:
+                if g1pos[0] <= 11 and g2pos[0] <= 11:
+                    if pos[1] == 4:
+                        return Directions.SOUTH
+                    else:
+                        return Directions.NORTH
+                else:
+                    return Directions.STOP
+            else:
+                return Directions.STOP
+                
+
+    def updateDistance(self, state):
+        g1pos = state.getGhostPosition(1)
+        g2pos = state.getGhostPosition(2)
+        pos = state.getPacmanPosition()
+        try:
+            self.RelDis = self.relDis
+            self.relDis.g1, self.relDis.g2 = abs(pos[0] - g1pos[0]), abs(pos[0] - g2pos[0])
+        except AttributeError:
+            class DIS:
+                g1 = 0
+                g2 = 0
+            self.relDis = DIS()
+            self.relDis.g1, self.relDis.g2 = abs(pos[0] - g1pos[0]), abs(pos[0] - g2pos[0])
         
 "P1-4"
 class DodgeAgent(Agent):
