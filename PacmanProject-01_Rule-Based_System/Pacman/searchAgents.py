@@ -185,7 +185,7 @@ class SnakeAgent(Agent):
         g1dir = state.getGhostState(1).getDirection()
         g2dir = state.getGhostState(2).getDirection()
         pos = state.getPacmanPosition()
-        self.updateDistance(state)
+#       self.updateDistance(state)
         if g1pos[1] == g2pos[1] == pos[1]:
             if pos[0] < g1pos[0] and pos[0] < g2pos[0]:
                 if Directions.SOUTH in state.getLegalPacmanActions():
@@ -228,19 +228,19 @@ class SnakeAgent(Agent):
                 return Directions.STOP
                 
 
-    def updateDistance(self, state):
-        g1pos = state.getGhostPosition(1)
-        g2pos = state.getGhostPosition(2)
-        pos = state.getPacmanPosition()
-        try:
-            self.RelDis = self.relDis
-            self.relDis.g1, self.relDis.g2 = abs(pos[0] - g1pos[0]), abs(pos[0] - g2pos[0])
-        except AttributeError:
-            class DIS:
-                g1 = 0
-                g2 = 0
-            self.relDis = DIS()
-            self.relDis.g1, self.relDis.g2 = abs(pos[0] - g1pos[0]), abs(pos[0] - g2pos[0])
+#   def updateDistance(self, state):
+#       g1pos = state.getGhostPosition(1)
+#       g2pos = state.getGhostPosition(2)
+#       pos = state.getPacmanPosition()
+#       try:
+#           self.RelDis = self.relDis
+#           self.relDis.g1, self.relDis.g2 = abs(pos[0] - g1pos[0]), abs(pos[0] - g2pos[0])
+#       except AttributeError:
+#           class DIS:
+#               g1 = 0
+#               g2 = 0
+#           self.relDis = DIS()
+#           self.relDis.g1, self.relDis.g2 = abs(pos[0] - g1pos[0]), abs(pos[0] - g2pos[0])
         
 "P1-4"
 class DodgeAgent(Agent):
@@ -249,7 +249,38 @@ class DodgeAgent(Agent):
     def getAction(self, state):
         "The agent receives a GameState (defined in pacman.py)."
         "[Project 1] YOUR CODE HERE"
-        
+        g1pos = state.getGhostPosition(1)
+        g1dir = state.getGhostState(1).getDirection()
+        pos = state.getPacmanPosition()
+        Dir = state.getPacmanState().getDirection()
+        if g1dir == "Stop":
+            return Directions.STOP
+        elif Dir == "Stop":
+            if g1pos[0] == 3:
+                self.pat = 1
+                return Directions.EAST
+            elif g1pos[1] == 6:
+                self.pat = 2
+                return Directions.SOUTH
+            else:
+                return Directions.STOP
+        elif self.pat == 1:
+            if pos[0] < 8:
+                return Directions.EAST
+            elif pos[1] > 1:
+                return Directions.SOUTH
+            else:
+                return Directions.STOP
+        elif self.pat == 2:
+            if pos[1] > 1:
+                return Directions.SOUTH
+            elif pos[0] < 8:
+                return Directions.EAST
+            else:
+                return Directions.STOP
+        else:
+            print g1pos
+            return Directions.STOP
         return Directions.STOP
 
 #######################################################
