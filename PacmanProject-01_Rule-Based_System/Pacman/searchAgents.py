@@ -92,7 +92,6 @@ class FroggerAgent(Agent):
             g2pos = state.getGhostPosition(2)
             g1dir = state.getGhostState(1).getDirection()
             g2dir = state.getGhostState(2).getDirection()
-            print g2pos, g2dir
             if pos == (1,8):
                 return Directions.EAST
             elif pos == (2,8):
@@ -294,16 +293,12 @@ class DodgeAgent(Agent):
                 return Directions.STOP
         elif True:
             if 1 < pos[1] < 8:
-                print 1
                 return Directions.SOUTH
             elif 1 < pos[0] < 8:
-                print 2
                 return Directions.EAST
             elif pos[0] == 1:
-                print 3
                 return Directions.EAST
             elif pos[0] == 8:
-                print 4
                 return Directions.SOUTH
         elif g1pos[1] == 8:
             if g1dir == "East":
