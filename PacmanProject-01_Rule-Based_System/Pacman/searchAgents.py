@@ -54,41 +54,228 @@ class GoWestAgent(Agent):
 "P1-1"
 class CleanerAgent(Agent):
     "The floor is too dirty."
-
+    index = 0
     def getAction(self, state):
         "The agent receives a GameState (defined in pacman.py)."
         "[Project 1] YOUR CODE HERE"
-
-        return Directions.STOP
+        cur_p = state.getPacmanPosition()
+        if (self.index == 0) or ((cur_p[0] == 1) and (cur_p[1] == 8)):
+            if (Directions.EAST in state.getLegalPacmanActions()):
+                self.index = 0
+                return Directions.EAST
+            else:
+                self.index = 1
+        else:
+            if (Directions.WEST in state.getLegalPacmanActions()):
+                return Directions.WEST
+            else:
+                self.index = 0
+        return Directions.SOUTH
 
 "P1-2"
 class FroggerAgent(Agent):
     "It's dangerous to cross streets with eyes closed."
-
+    initstate = True
+    pattern = 0
     def getAction(self, state):
         "The agent receives a GameState (defined in pacman.py)."
         "[Project 1] YOUR CODE HERE"
-
-        return Directions.STOP
-
+        walls = state.getWalls()
+        cur_p = state.getPacmanPosition()
+        b_ghost_p = state.getGhostPosition(1)
+        b_ghost_d = state.getGhostState(1).getDirection()
+        o_ghost_p = state.getGhostPosition(2)
+        o_ghost_d = state.getGhostState(2).getDirection()
+        if(self.initstate == True):
+            if(b_ghost_d == Directions.STOP):
+                return Directions.SOUTH
+            elif(b_ghost_d == Directions.EAST):
+                self.initstate = False
+                self.pattern = 1
+                return Directions.EAST
+            else:
+                self.initstate = False
+                self.pattern = 2
+                return Directions.EAST
+        elif(self.pattern == 1):
+            #print(cur_p[1],' ',cur_p[0])
+            #print(walls[cur_p[1]-1][cur_p[0]:-2])
+            if(True not in walls[cur_p[1]-1][cur_p[0]:-2]):
+                if(Directions.SOUTH in state.getLegalPacmanActions()):
+                    return Directions.SOUTH
+                elif(Directions.EAST in state.getLegalPacmanActions()):
+                    return Directions.EAST
+            elif(Directions.EAST in state.getLegalPacmanActions()):
+                return Directions.EAST
+        elif(self.pattern == 2):
+            tmp = cur_p[0]-b_ghost_p[0]
+            tmp_b = tmp*tmp
+            if(cur_p[1] == b_ghost_p[1]+1) and (tmp_b <= 1):
+                if(cur_p[1] == o_ghost_p[1]) and (cur_p[0]+1 == o_ghost_p[0]):
+                    return Directions.STOP
+                elif(walls[cur_p[1]+1][cur_p[0]+1]==True):
+                    return Directions.STOP
+                else:
+                    return Directions.EAST
+            if(True not in walls[cur_p[1]-1][cur_p[0]:-2]):
+                if(Directions.SOUTH in state.getLegalPacmanActions()):
+                    return Directions.SOUTH
+                elif(Directions.EAST in state.getLegalPacmanActions()):
+                    return Directions.EAST
+            elif(Directions.EAST in state.getLegalPacmanActions()):
+                return Directions.EAST
+            
 "P1-3"
 class SnakeAgent(Agent):
     "But you don't have a sneaking suit."
-
+    hidestate = 0
     def getAction(self, state):
         "The agent receives a GameState (defined in pacman.py)."
         "[Project 1] YOUR CODE HERE"
-
+        cur_p = state.getPacmanPosition()
+        b_ghost_p = state.getGhostPosition(1)
+        b_ghost_d = state.getGhostState(1).getDirection()
+        o_ghost_p = state.getGhostPosition(2)
+        o_ghost_d = state.getGhostState(2).getDirection()
+        left_g_p,left_g_d,right_g_p,right_g_d,distance = 0,0,0,0,0
+        if(b_ghost_p[0] > o_ghost_p[0]):
+            left_g_p = o_ghost_p[0]
+            right_g_p = b_ghost_p[0]
+            left_g_d = o_ghost_d
+            right_g_d = b_ghost_d
+        else:
+            left_g_p = b_ghost_p[0]
+            right_g_p = o_ghost_p[0]
+            left_g_d = b_ghost_d
+            right_g_d = o_ghost_d
+            distance = int(right_g_p) - int(left_g_p)
+        if(self.hidestate == 0):
+            if(Directions.NORTH in state.getLegalPacmanActions()):
+                self.hidestate = 1
+                return Directions.NORTH
+            elif(Directions.EAST in state.getLegalPacmanActions()):
+                return Directions.EAST
+        elif(self.hidestate == 1):
+            if(left_g_p > cur_p[0])and(left_g_d == Directions.EAST)and(right_g_p > cur_p[0])and(right_g_d == Directions.EAST):
+                self.hidestate = 2
+                return Directions.SOUTH
+            if(left_g_p < cur_p[0])and(left_g_d == Directions.WEST)and(right_g_p > cur_p[0])and(right_g_d == Directions.EAST):
+                self.hidestate = 2
+                return Directions.SOUTH
+            else:
+                return Directions.STOP
+        elif(self.hidestate == 2):
+            if(Directions.SOUTH in state.getLegalPacmanActions()):
+                self.hidestate = 3
+                return Directions.SOUTH
+            elif(Directions.EAST in state.getLegalPacmanActions()):
+                return Directions.EAST
+        elif(self.hidestate == 3):
+            if(left_g_p < cur_p[0])and(right_g_p < cur_p[0])and(right_g_d == Directions.WEST):
+                self.hidestate = 0 
+                return Directions.NORTH
+            else:
+                return Directions.STOP
         return Directions.STOP
 
 "P1-4"
 class DodgeAgent(Agent):
     "You can run, but you can't hide."
-
+    pattern = 0
+    init = True
+    last_dis = 100
+    last_pat = None
     def getAction(self, state):
         "The agent receives a GameState (defined in pacman.py)."
         "[Project 1] YOUR CODE HERE"
-
+        cur_p = state.getPacmanPosition()
+        ghost_p = state.getGhostPosition(1)
+        ghost_d = state.getGhostState(1).getDirection()
+        x_d = cur_p[0] - ghost_p[0]
+        y_d = cur_p[1] - ghost_p[1]
+        distance = x_d * x_d + y_d * y_d
+        print('ag:',cur_p[0],cur_p[1])
+        print('gh:',ghost_p[0],ghost_p[1],ghost_d)
+        print('dis:',distance,self.last_dis)
+        if(cur_p[0] == 1) and (cur_p[1] == 8) and (ghost_d == Directions.STOP):
+            self.init = True
+            self.last_dis = 100
+            self.last_pat = None
+            return Directions.STOP
+        if(self.init == True):
+            if(ghost_d == Directions.NORTH) or (ghost_d == Directions.EAST):
+                self.pattern = 1
+            elif(ghost_d == Directions.WEST) or (ghost_d == Directions.SOUTH):
+                self.pattern = 2
+            self.init = False
+        if(self.pattern == 1):
+            if(distance < self.last_dis) and (distance <= 16) and (self.last_pat != 4):
+                self.last_dis = distance
+                self.last_pat = self.pattern
+                self.pattern = 3
+                if(Directions.WEST in state.getLegalPacmanActions()):
+                    return Directions.WEST
+                elif(Directions.NORTH in state.getLegalPacmanActions()):
+                    return Directions.NORTH
+            else:
+                self.last_dis = distance
+                if(Directions.SOUTH in state.getLegalPacmanActions()):
+                    return Directions.SOUTH
+                else:
+                    return Directions.EAST
+        elif(self.pattern == 2):
+            if(distance < self.last_dis) and (distance <= 16) and (self.last_pat != 3):
+                self.last_dis = distance
+                self.last_pat = self.pattern
+                self.pattern = 4
+                if(Directions.NORTH in state.getLegalPacmanActions()):
+                    return Directions.NORTH
+                elif(Directions.WEST in state.getLegalPacmanActions()):
+                    return Directions.WEST
+            else:
+                self.last_dis = distance
+                if(Directions.EAST in state.getLegalPacmanActions()):
+                    return Directions.EAST
+                else:
+                    return Directions.SOUTH
+        elif(self.pattern == 3):
+            if(distance > self.last_dis) and (distance >= 20):
+                self.last_dis = distance
+                self.last_pat = self.pattern
+                self.pattern = 1
+                if(Directions.SOUTH in state.getLegalPacmanActions()):
+                    return Directions.SOUTH
+                elif(Directions.EAST in state.getLegalPacmanActions()):
+                    return Directions.EAST
+            else:
+                self.last_dis = distance
+                if(Directions.WEST in state.getLegalPacmanActions()):
+                    return Directions.WEST
+                elif(Directions.NORTH in state.getLegalPacmanActions()):
+                    return Directions.NORTH
+                else:
+                    self.last_pat = self.pattern
+                    self.pattern = 2
+                    return Directions.EAST
+        elif(self.pattern == 4):
+            if(distance > self.last_dis) and (distance >= 20):
+                self.last_dis = distance
+                self.last_pat = self.pattern
+                self.pattern = 2
+                if(Directions.EAST in state.getLegalPacmanActions()):
+                    return Directions.EAST
+                elif(Directions.SOUTH in state.getLegalPacmanActions()):
+                    return Directions.SOUTH
+            else:
+                self.last_dis = distance
+                if(Directions.NORTH in state.getLegalPacmanActions()):
+                    return Directions.NORTH
+                elif(Directions.WEST in state.getLegalPacmanActions()):
+                    return Directions.WEST
+                else:
+                    self.last_pat = self.pattern
+                    self.pattern = 1
+                    return Directions.SOUTH
         return Directions.STOP
 
 #######################################################
