@@ -80,6 +80,14 @@ class FroggerAgent(Agent):
     def getAction(self, state):
         "The agent receives a GameState (defined in pacman.py)."
         "[Project 1] YOUR CODE HERE"
+
+        #def column(matrix, index):
+        #    return [matrix[i][index] for i in range(10)]
+        def column(matrix, index):
+            print matrix
+            for i in range(10):
+                print matrix[i]
+
         food=(8,1)
         walls=state.getWalls()
         pacmanPos=state.getPacmanPosition()
@@ -108,6 +116,11 @@ class FroggerAgent(Agent):
             return Directions.SOUTH
         elif Directions.EAST in state.getLegalPacmanActions():
             return Directions.EAST
+        #if Directions.EAST in state.getLegalPacmanActions():
+        #    print column(walls,pacmanPos[0])
+        #    return Directions.EAST
+        #elif Directions.SOUTH in state.getLegalPacmanActions():
+        #    return Directions.SOUTH
 
         return Directions.STOP
 
@@ -115,9 +128,47 @@ class FroggerAgent(Agent):
 class SnakeAgent(Agent):
     "But you don't have a sneaking suit."
 
+    def __init__(self):
+        self.s=0
+
     def getAction(self, state):
         "The agent receives a GameState (defined in pacman.py)."
         "[Project 1] YOUR CODE HERE"
+        walls=state.getWalls()
+        pacmanPos=state.getPacmanPosition()
+        blueGhostPos=state.getGhostPosition(1)
+        orangeGhostPos=state.getGhostPosition(2)
+        blueGhostDir=state.getGhostState(1).getDirection()
+        orangeGhostDir=state.getGhostState(2).getDirection()
+
+        if self.s==0:
+            if Directions.NORTH in state.getLegalPacmanActions():
+                self.s=1
+                return Directions.NORTH
+            elif Directions.EAST in state.getLegalPacmanActions():
+                return Directions.EAST
+        elif self.s==1:
+            if (orangeGhostDir == Directions.EAST and orangeGhostPos[0]>pacmanPos[0]) and\
+                (blueGhostDir == Directions.WEST and blueGhostPos[0]==pacmanPos[0]-1):
+                self.s=2
+                return Directions.SOUTH
+            elif (blueGhostDir == Directions.EAST and blueGhostPos[0]>pacmanPos[0]) and\
+                (orangeGhostDir == Directions.WEST and orangeGhostPos[0]==pacmanPos[0]-1):
+                self.s=2
+                return Directions.SOUTH
+        elif self.s==2:
+            if Directions.SOUTH in state.getLegalPacmanActions():
+                self.s=3
+                return Directions.SOUTH
+            elif Directions.EAST in state.getLegalPacmanActions():
+                return Directions.EAST
+        elif self.s==3:
+            if orangeGhostPos[0] < pacmanPos[0] and blueGhostPos[0] < pacmanPos[0]:
+
+                if Directions.NORTH in state.getLegalPacmanActions():
+                    self.s=0
+                    return Directions.NORTH
+
 
         return Directions.STOP
 
