@@ -253,31 +253,91 @@ class DodgeAgent(Agent):
         g1dir = state.getGhostState(1).getDirection()
         pos = state.getPacmanPosition()
         Dir = state.getPacmanState().getDirection()
-        if g1dir == "Stop":
-            return Directions.STOP
-        elif Dir == "Stop":
-            if g1pos[0] == 3:
-                self.pat = 1
-                return Directions.EAST
-            elif g1pos[1] == 6:
-                self.pat = 2
-                return Directions.SOUTH
+#Version 1: 100-time-avg:489
+        if g1pos[0] == 8:
+            if g1dir == "South":
+                if 1 <= pos[0] < 8 and pos[1] == 8:
+                    return Directions.EAST
+                elif 1 < pos[1] < 8:
+                    return Directions.NORTH
+                else:
+                    return Directions.NORTH
+            elif g1dir == "North":
+                if 1 < pos[0] < 8 and pos[1] == 8:
+                    return Directions.WEST
+                elif 1 < pos[1] <= 8:
+                    return Directions.SOUTH
+                elif pos[0] == 1:
+                    return Directions.EAST
+                else:
+                    return Directions.EAST
             else:
                 return Directions.STOP
-        elif self.pat == 1:
-            if pos[0] < 8:
-                return Directions.EAST
-            elif pos[1] > 1:
-                return Directions.SOUTH
+        elif g1pos[1] == 1:
+            if g1dir == "East":
+                if 1 < pos[1] < 8:
+                    return Directions.SOUTH
+                elif 1 < pos[0] < 8 and pos[1] == 8:
+                    return Directions.WEST
+                elif pos[0] == 1:
+                    return Directions.SOUTH
+                else:
+                    return Directions.WEST
+            elif g1dir == "West":
+                if 1 < pos[1] < 8 and pos[0] == 1:
+                    return Directions.NORTH
+                elif 1 <= pos[0] < 8 and pos[1] == 8:
+                    return Directions.EAST
+                else:
+                    return Directions.SOUTH
             else:
                 return Directions.STOP
-        elif self.pat == 2:
-            if pos[1] > 1:
+        elif True:
+            if 1 < pos[1] < 8:
+                print 1
                 return Directions.SOUTH
-            elif pos[0] < 8:
+            elif 1 < pos[0] < 8:
+                print 2
                 return Directions.EAST
+            elif pos[0] == 1:
+                print 3
+                return Directions.EAST
+            elif pos[0] == 8:
+                print 4
+                return Directions.SOUTH
+        elif g1pos[1] == 8:
+            if g1dir == "East":
+                return Directions.WEST
+            elif g1dir == "West":
+                    return Directions.EAST
             else:
                 return Directions.STOP
+#Version 2: 100-time-avg:485
+#       if g1dir == "Stop":
+#           return Directions.STOP
+#       elif Dir == "Stop":
+#           if g1pos[0] == 3:
+#               self.pat = 1
+#               return Directions.EAST
+#           elif g1pos[1] == 6:
+#               self.pat = 2
+#               return Directions.SOUTH
+#           else:
+#               return Directions.STOP
+#       elif self.pat == 1:
+#           if pos[0] < 8:
+#               return Directions.EAST
+#           elif pos[1] > 1:
+#               return Directions.SOUTH
+#           else:
+#               return Directions.STOP
+#       elif self.pat == 2:
+#           if pos[1] > 1:
+#               return Directions.SOUTH
+#           elif pos[0] < 8:
+#               return Directions.EAST
+#           else:
+#               return Directions.STOP
         else:
             print g1pos
             return Directions.STOP
