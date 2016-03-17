@@ -175,10 +175,46 @@ class SnakeAgent(Agent):
 "P1-4"
 class DodgeAgent(Agent):
     "You can run, but you can't hide."
+    def __init__(self):
+        self.route=0
+        self.init=1
 
     def getAction(self, state):
         "The agent receives a GameState (defined in pacman.py)."
         "[Project 1] YOUR CODE HERE"
+        blueGhostPos=state.getGhostPosition(1)
+        blueGhostDir=state.getGhostState(1).getDirection()
+
+        print blueGhostDir,self.init,self.route
+        if blueGhostDir==Directions.STOP:
+            self.init=1
+            self.route=0
+            return Directions.STOP
+
+        if self.init:
+            self.init=0
+            if blueGhostDir==Directions.EAST:
+                self.route=1
+            elif blueGhostDir==Directions.WEST:
+                self.route=2
+            else:
+                self.init=1
+                return Directions.STOP
+
+
+        #route 1
+        if self.route==1:
+            if Directions.SOUTH in state.getLegalPacmanActions():
+                return Directions.SOUTH
+            elif Directions.EAST in state.getLegalPacmanActions():
+                return Directions.EAST
+        elif self.route==2:
+            if Directions.EAST in state.getLegalPacmanActions():
+                return Directions.EAST
+            elif Directions.SOUTH in state.getLegalPacmanActions():
+                return Directions.SOUTH
+
+
 
         return Directions.STOP
 
