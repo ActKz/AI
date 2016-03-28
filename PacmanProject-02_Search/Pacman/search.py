@@ -87,9 +87,51 @@ def depthFirstSearch(problem):
     print "Is the start a goal?", problem.isGoalState(problem.getStartState())
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     """
-    
+
     "[Project 2] YOUR CODE HERE"
+    print "Start:", problem.getStartState()
+    print "Is the start a goal?", problem.isGoalState(problem.getStartState())
+    if problem.isGoalState(problem.getStartState()):
+        return []
+    print "Start's successors:", problem.getSuccessors(problem.getStartState())
+    from game import Directions
+    n = Directions.NORTH
+    s = Directions.SOUTH
+    w = Directions.WEST
+    e = Directions.EAST
     
+    
+    from util import Stack
+    visited = set(problem.getStartState())
+    stack = Stack()
+    path = []  
+    stack.push((problem.getStartState(), []))      
+    #stack is tup  [0] is state [1] is path
+    while not stack.isEmpty() :        
+        cur = stack.pop()        
+        
+        if problem.isGoalState(cur[0]):
+            path = cur[1]
+            break
+        
+        for succ in problem.getSuccessors(cur[0]):            
+            tmp = list(cur[1])                                   
+            
+            if not succ[0] in visited:
+                visited.add(succ[0])
+                stack.push(cur)
+                if succ[1] == 'North':
+                    tmp.append(n)
+                elif succ[1] == 'South':
+                    tmp.append(s)
+                elif succ[1] == 'East':
+                    tmp.append(e)
+                elif succ[1] == 'West':
+                    tmp.append(w)
+                stack.push((succ[0],tmp))
+                break
+        
+    return path  
     util.raiseNotDefined()
 
 # P2-2
