@@ -55,218 +55,108 @@ class GoWestAgent(Agent):
 "P1-1"
 class CleanerAgent(Agent):
     "The floor is too dirty."
-
+    
     def getAction(self, state):
         "The agent receives a GameState (defined in pacman.py)."
         "[Project 1] YOUR CODE HERE"
-        pos = state.getPacmanPosition()
-        if state.getNumFood() == 0:
-            return Directions.STOP
-        elif pos[0]%2 == 1:
-            if pos[1] == 1:
-                return Directions.EAST
-            else:
-                return Directions.SOUTH
-        else:
-            if pos[1] == 8:
-                return Directions.EAST
-            else:
-                return Directions.NORTH
-
-
+        foodPos = state.getFood()
+        pacmanPos = state.getPacmanPosition()
+        if foodPos[pacmanPos[0]][pacmanPos[1]-1]:
+            return Directions.SOUTH
+        elif foodPos[pacmanPos[0]][pacmanPos[1]+1]:
+            return Directions.NORTH
+        elif foodPos[pacmanPos[0]-1][pacmanPos[1]]:
+            return Directions.WEST
+        elif foodPos[pacmanPos[0]+1][pacmanPos[1]]:
+            return Directions.EAST
+        
+        return Directions.STOP
 "P1-2"
 class FroggerAgent(Agent):
     "It's dangerous to cross streets with eyes closed."
-
+    
     def getAction(self, state):
         "The agent receives a GameState (defined in pacman.py)."
         "[Project 1] YOUR CODE HERE"
-
-
-        food=(8,1)
-        walls=state.getWalls()
-        pacmanPos=state.getPacmanPosition()
-        blueGhostPos=state.getGhostPosition(1)
-        orangeGhostPos=state.getGhostPosition(2)
-        blueGhostDir=state.getGhostState(1).getDirection()
-        orangeGhostDir=state.getGhostState(2).getDirection()
-
-        #躲藍鬼
-        #如果藍鬼在絕對值2的範圍內
-        if pacmanPos[1] - blueGhostPos[1] ==1 and abs(pacmanPos[0]-blueGhostPos[0])<2:
-            #這個是鬼已經超過你，可以趕快下去
-            if (blueGhostPos[0]>pacmanPos[0] and blueGhostDir==Directions.EAST):
+        
+        walls = state.getWalls()
+        pacmanPos = state.getPacmanPosition()
+        bG = state.getGhostPosition(1)
+        oG = state.getGhostPosition(2)
+        bGD = state.getGhostState(1).getDirection()
+        oGD = state.getGhostState(2).getDirection()
+        # dodge blue ghost
+        if pacmanPos[1] - bG[1] == 1 and abs(pacmanPos[0] - bG[0]) < 2:
+            if bG[0] > pacmanPos[0] and bGD == Directions.EAST:
                 return Directions.SOUTH
             return Directions.STOP
-        #躲橘鬼
-        if pacmanPos[0] - orangeGhostPos[0] ==-1 and abs(pacmanPos[1]-orangeGhostPos[1])<2:
-            #這個是鬼已經超過你，可以趕快下去
-            if orangeGhostPos[1]>pacmanPos[1] and blueGhostDir==Directions.NORTH:
+        #dodge orange ghost
+        if oG[0] - pacmanPos[0] == 1 and abs(pacmanPos[1] - oG[1]) < 2:
+            if oG[1] > pacmanPos[1] and oGD == Directions.NORTH:
                 return Directions.EAST
             return Directions.STOP
-
-        #行走路徑
-        if Directions.SOUTH in state.getLegalPacmanActions() and\
-                True not in walls[pacmanPos[1]-1][pacmanPos[0]:-2]:
+        # Walk way
+        if Directions.SOUTH in state.getLegalPacmanActions() and True not in walls[pacmanPos[1]-1][pacmanPos[0]:-2]:
             return Directions.SOUTH
         elif Directions.EAST in state.getLegalPacmanActions():
             return Directions.EAST
-        #if Directions.EAST in state.getLegalPacmanActions():
-        #    print column(walls,pacmanPos[0])
-        #    return Directions.EAST
-        #elif Directions.SOUTH in state.getLegalPacmanActions():
-        #    return Directions.SOUTH
-
+        
         return Directions.STOP
-
+        
 "P1-3"
 class SnakeAgent(Agent):
     "But you don't have a sneaking suit."
-    hidestate = 0
+    def __init__(self):
+        self.pattern = 0
+        
     def getAction(self, state):
         "The agent receives a GameState (defined in pacman.py)."
         "[Project 1] YOUR CODE HERE"
-        cur_p = state.getPacmanPosition()
-        b_ghost_p = state.getGhostPosition(1)
-        b_ghost_d = state.getGhostState(1).getDirection()
-        o_ghost_p = state.getGhostPosition(2)
-        o_ghost_d = state.getGhostState(2).getDirection()
-        left_g_p,left_g_d,right_g_p,right_g_d,distance = 0,0,0,0,0
-        if(b_ghost_p[0] > o_ghost_p[0]):
-            left_g_p = o_ghost_p[0]
-            right_g_p = b_ghost_p[0]
-            left_g_d = o_ghost_d
-            right_g_d = b_ghost_d
-        else:
-            left_g_p = b_ghost_p[0]
-            right_g_p = o_ghost_p[0]
-            left_g_d = b_ghost_d
-            right_g_d = o_ghost_d
-            distance = int(right_g_p) - int(left_g_p)
-        if(self.hidestate == 0):
-            if(Directions.NORTH in state.getLegalPacmanActions()):
-                self.hidestate = 1
+        
+        pacmanPos = state.getPacmanPosition()
+        bG = state.getGhostPosition(1)
+        oG = state.getGhostPosition(2)
+        bGD = state.getGhostState(1).getDirection()
+        oGD = state.getGhostState(2).getDirection()
+        
+        if self.pattern == 0:
+            if Directions.NORTH in state.getLegalPacmanActions():
+                self.pattern = 1
                 return Directions.NORTH
-            elif(Directions.EAST in state.getLegalPacmanActions()):
-                return Directions.EAST
-        elif(self.hidestate == 1):
-            if(left_g_p > cur_p[0])and(left_g_d == Directions.EAST)and(right_g_p > cur_p[0])and(right_g_d == Directions.EAST):
-                self.hidestate = 2
+            return Directions.EAST
+        elif self.pattern == 1:
+            if (pacmanPos[0] > bG[0] and bGD == Directions.WEST) or (bG[0] > pacmanPos[0] and bGD == Directions.EAST):
+                if (pacmanPos[0] > oG[0] and oGD == Directions.WEST) or (pacmanPos[0] < oG[0] and oGD == Directions.EAST):
+                    self.pattern = 2
+                    return Directions.SOUTH
+            return Directions.STOP
+        elif self.pattern == 2:
+            if Directions.SOUTH in state.getLegalPacmanActions():
+                self.pattern = 3
                 return Directions.SOUTH
-            if(left_g_p < cur_p[0])and(left_g_d == Directions.WEST)and(right_g_p > cur_p[0])and(right_g_d == Directions.EAST):
-                self.hidestate = 2
-                return Directions.SOUTH
-            else:
-                return Directions.STOP
-        elif(self.hidestate == 2):
-            if(Directions.SOUTH in state.getLegalPacmanActions()):
-                self.hidestate = 3
-                return Directions.SOUTH
-            elif(Directions.EAST in state.getLegalPacmanActions()):
-                return Directions.EAST
-        elif(self.hidestate == 3):
-            if(left_g_p < cur_p[0])and(right_g_p < cur_p[0])and(right_g_d == Directions.WEST):
-                self.hidestate = 0
-                return Directions.NORTH
-            else:
-                return Directions.STOP
+            return Directions.EAST
+        elif self.pattern == 3:
+            if (pacmanPos[0] > bG[0] and bGD == Directions.WEST) or (pacmanPos[0] - bG[0] > 1 and bGD == Directions.EAST):
+                if (pacmanPos[0] > oG[0] and oGD == Directions.WEST) or (pacmanPos[0] - oG[0] > 1 and oGD == Directions.EAST):
+                    self.pattern = 0
+                    return Directions.NORTH
+            return Directions.STOP
+            
         return Directions.STOP
-
+        
 "P1-4"
 class DodgeAgent(Agent):
     "You can run, but you can't hide."
-
+    
     def getAction(self, state):
         "The agent receives a GameState (defined in pacman.py)."
         "[Project 1] YOUR CODE HERE"
-        g1pos = state.getGhostPosition(1)
-        g1dir = state.getGhostState(1).getDirection()
-        pos = state.getPacmanPosition()
-        Dir = state.getPacmanState().getDirection()
-#Version 1: 100-time-avg:489
-        if g1pos[0] == 8:
-            if g1dir == "South":
-                if 1 <= pos[0] < 8 and pos[1] == 8:
-                    return Directions.EAST
-                elif 1 < pos[1] < 8:
-                    return Directions.NORTH
-                else:
-                    return Directions.NORTH
-            elif g1dir == "North":
-                if 1 < pos[0] < 8 and pos[1] == 8:
-                    return Directions.WEST
-                elif 1 < pos[1] <= 8:
-                    return Directions.SOUTH
-                elif pos[0] == 1:
-                    return Directions.EAST
-                else:
-                    return Directions.EAST
-            else:
-                return Directions.STOP
-        elif g1pos[1] == 1:
-            if g1dir == "East":
-                if 1 < pos[1] < 8:
-                    return Directions.SOUTH
-                elif 1 < pos[0] < 8 and pos[1] == 8:
-                    return Directions.WEST
-                elif pos[0] == 1:
-                    return Directions.SOUTH
-                else:
-                    return Directions.WEST
-            elif g1dir == "West":
-                if 1 < pos[1] < 8 and pos[0] == 1:
-                    return Directions.NORTH
-                elif 1 <= pos[0] < 8 and pos[1] == 8:
-                    return Directions.EAST
-                else:
-                    return Directions.SOUTH
-            else:
-                return Directions.STOP
-        elif True:
-            if 1 < pos[1] < 8:
-                return Directions.SOUTH
-            elif 1 < pos[0] < 8:
-                return Directions.EAST
-            elif pos[0] == 1:
-                return Directions.EAST
-            elif pos[0] == 8:
-                return Directions.SOUTH
-        elif g1pos[1] == 8:
-            if g1dir == "East":
-                return Directions.WEST
-            elif g1dir == "West":
-                    return Directions.EAST
-            else:
-                return Directions.STOP
-#Version 2: 100-time-avg:485
-#       if g1dir == "Stop":
-#           return Directions.STOP
-#       elif Dir == "Stop":
-#           if g1pos[0] == 3:
-#               self.pat = 1
-#               return Directions.EAST
-#           elif g1pos[1] == 6:
-#               self.pat = 2
-#               return Directions.SOUTH
-#           else:
-#               return Directions.STOP
-#       elif self.pat == 1:
-#           if pos[0] < 8:
-#               return Directions.EAST
-#           elif pos[1] > 1:
-#               return Directions.SOUTH
-#           else:
-#               return Directions.STOP
-#       elif self.pat == 2:
-#           if pos[1] > 1:
-#               return Directions.SOUTH
-#           elif pos[0] < 8:
-#               return Directions.EAST
-#           else:
-#               return Directions.STOP
-        else:
-            print g1pos
-            return Directions.STOP
+        
+        pacmanPos = state.getPacmanPosition()
+        bG = state.getGhostPosition(1)
+        bGD = state.getGhostState(1).getDirection()    
+        
+        
         return Directions.STOP
 
 #######################################################
