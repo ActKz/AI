@@ -89,11 +89,11 @@ def depthFirstSearch(problem):
     """
 
     "[Project 2] YOUR CODE HERE"
-    print "Start:", problem.getStartState()
-    print "Is the start a goal?", problem.isGoalState(problem.getStartState())
+    #print "Start:", problem.getStartState()
+    #print "Is the start a goal?", problem.isGoalState(problem.getStartState())
     if problem.isGoalState(problem.getStartState()):
         return []
-    print "Start's successors:", problem.getSuccessors(problem.getStartState())
+    #print "Start's successors:", problem.getSuccessors(problem.getStartState())
     from game import Directions
     n = Directions.NORTH
     s = Directions.SOUTH
@@ -105,21 +105,20 @@ def depthFirstSearch(problem):
     visited = set(problem.getStartState())
     stack = Stack()
     path = []  
-    stack.push((problem.getStartState(), []))      
+    stack.push((problem.getStartState(), []))
     #stack is tup  [0] is state [1] is path
     while not stack.isEmpty() :        
         cur = stack.pop()        
-        
+        print cur[0]
         if problem.isGoalState(cur[0]):
-            path = cur[1]
+            path = list(cur[1])
             break
-        
-        for succ in problem.getSuccessors(cur[0]):            
-            tmp = list(cur[1])                                   
-            
+        #To avoid expand error, push every node on branch onto stack once
+        successors = problem.getSuccessors(cur[0])
+        for succ in successors:            
+            tmp = list(cur[1])
             if not succ[0] in visited:
-                visited.add(succ[0])
-                stack.push(cur)
+                visited.add(succ[0])                
                 if succ[1] == 'North':
                     tmp.append(n)
                 elif succ[1] == 'South':
@@ -128,8 +127,9 @@ def depthFirstSearch(problem):
                     tmp.append(e)
                 elif succ[1] == 'West':
                     tmp.append(w)
-                stack.push((succ[0],tmp))
-                break
+                else:
+                    tmp.append(succ[1])
+                stack.push((succ[0],tmp))               
         
     return path  
     util.raiseNotDefined()
