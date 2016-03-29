@@ -108,8 +108,9 @@ def depthFirstSearch(problem):
     stack.push((problem.getStartState(), []))
     #stack is tup  [0] is state [1] is path
     while not stack.isEmpty() :        
-        cur = stack.pop()        
-        print cur[0]
+        cur = stack.pop()
+        visited.add(cur[0])
+        #print cur[0], cur[1]
         if problem.isGoalState(cur[0]):
             path = list(cur[1])
             break
@@ -117,8 +118,8 @@ def depthFirstSearch(problem):
         successors = problem.getSuccessors(cur[0])
         for succ in successors:            
             tmp = list(cur[1])
-            if not succ[0] in visited:
-                visited.add(succ[0])                
+            
+            if not succ[0] in visited:                                
                 if succ[1] == 'North':
                     tmp.append(n)
                 elif succ[1] == 'South':
@@ -129,7 +130,8 @@ def depthFirstSearch(problem):
                     tmp.append(w)
                 else:
                     tmp.append(succ[1])
-                stack.push((succ[0],tmp))               
+                stack.push((succ[0],tmp))
+                #print tmp
         
     return path  
     util.raiseNotDefined()
@@ -137,9 +139,52 @@ def depthFirstSearch(problem):
 # P2-2
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
+
+    "[Project 2] YOUR CODE HERE"
     
-    "[Project 2] YOUR CODE HERE"    
+    if problem.isGoalState(problem.getStartState()):
+        return []
+    #print "Start's successors:", problem.getSuccessors(problem.getStartState())
+    from game import Directions
+    n = Directions.NORTH
+    s = Directions.SOUTH
+    w = Directions.WEST
+    e = Directions.EAST
     
+    
+    from util import Queue
+    visited = set(problem.getStartState())
+    queue = Queue()
+    path = []
+    queue.push((problem.getStartState(), []))
+    #stack is tup  [0] is state [1] is path
+    while not queue.isEmpty():
+        cur = queue.pop()
+        visited.add(cur[0])
+        #print cur[0], cur[1]
+        if problem.isGoalState(cur[0]):            
+            path = list(cur[1])
+            break
+        #To avoid expand error, push every node on branch onto stack once
+        successors = problem.getSuccessors(cur[0])
+        for succ in successors:            
+            tmp = list(cur[1])
+            
+            if not succ[0] in visited:                                
+                if succ[1] == 'North':
+                    tmp.append(n)
+                elif succ[1] == 'South':
+                    tmp.append(s)
+                elif succ[1] == 'East':
+                    tmp.append(e)
+                elif succ[1] == 'West':
+                    tmp.append(w)
+                else:
+                    tmp.append(succ[1])
+                queue.push((succ[0],tmp))
+                #print tmp
+    
+    return path  
     util.raiseNotDefined()
 
 def uniformCostSearch(problem):
