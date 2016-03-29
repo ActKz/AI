@@ -165,7 +165,7 @@ def breadthFirstSearch(problem):
         if problem.isGoalState(cur[0]):            
             path = list(cur[1])
             break
-        #To avoid expand too much . Change the position pushing the node onto visited
+        #To avoid expand too much . Change the position of pushing the node onto visited
         successors = problem.getSuccessors(cur[0])        
         for succ in successors:            
             tmp = list(cur[1])
@@ -229,14 +229,16 @@ def aStarSearch(problem, heuristic=nullHeuristic):
         if problem.isGoalState(cur[0]):            
             path = list(cur[1])
             break
-        #To avoid expand too much . Change the position pushing the node onto visited
+        #To avoid expand too much . Change the position of pushing the node onto visited
         successors = problem.getSuccessors(cur[0])        
         for succ in successors:            
             tmp = list(cur[1])
             hCost = heuristic(succ[0], problem)
             if not succ[0] in visited:
-                #### visited different with dfs
-                visited.add(succ[0])
+                #### visited different with bfs
+                if not problem.isGoalState(succ[0]):
+                    visited.add(succ[0])                   
+                #### 
                 if succ[1] == 'North':
                     tmp.append(n)
                 elif succ[1] == 'South':
@@ -249,7 +251,7 @@ def aStarSearch(problem, heuristic=nullHeuristic):
                     tmp.append(succ[1])
                 cost = problem.getCostOfActions(tmp) + hCost
                 queue.push((succ[0],tmp), cost)
-                #print tmp
+                #print cur[0], succ[0], hCost, cost
     
     return path  
     util.raiseNotDefined()
