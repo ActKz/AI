@@ -206,6 +206,52 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     
     "[Project 2] YOUR CODE HERE"
     
+    if problem.isGoalState(problem.getStartState()):
+        return []
+    #print "Start's successors:", problem.getSuccessors(problem.getStartState())
+    from game import Directions
+    n = Directions.NORTH
+    s = Directions.SOUTH
+    w = Directions.WEST
+    e = Directions.EAST
+    
+    
+    from util import PriorityQueue
+    visited = set(problem.getStartState())
+    queue = PriorityQueue()
+    path = []
+    queue.push((problem.getStartState(), []), 0)
+    #queue is tup  [0] is state [1] is path
+    while not queue.isEmpty():
+        cur = queue.pop()
+        #visited.add(cur[0])
+        #print cur[0], cur[1]
+        if problem.isGoalState(cur[0]):            
+            path = list(cur[1])
+            break
+        #To avoid expand too much . Change the position pushing the node onto visited
+        successors = problem.getSuccessors(cur[0])        
+        for succ in successors:            
+            tmp = list(cur[1])
+            hCost = heuristic(succ[0], problem)
+            if not succ[0] in visited:
+                #### visited different with dfs
+                visited.add(succ[0])
+                if succ[1] == 'North':
+                    tmp.append(n)
+                elif succ[1] == 'South':
+                    tmp.append(s)
+                elif succ[1] == 'East':
+                    tmp.append(e)
+                elif succ[1] == 'West':
+                    tmp.append(w)
+                else:
+                    tmp.append(succ[1])
+                cost = problem.getCostOfActions(tmp) + hCost
+                queue.push((succ[0],tmp), cost)
+                #print tmp
+    
+    return path  
     util.raiseNotDefined()
 
 
