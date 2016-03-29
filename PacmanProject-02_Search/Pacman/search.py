@@ -157,20 +157,21 @@ def breadthFirstSearch(problem):
     queue = Queue()
     path = []
     queue.push((problem.getStartState(), []))
-    #stack is tup  [0] is state [1] is path
+    #queue is tup  [0] is state [1] is path
     while not queue.isEmpty():
         cur = queue.pop()
-        visited.add(cur[0])
+        #visited.add(cur[0])
         #print cur[0], cur[1]
         if problem.isGoalState(cur[0]):            
             path = list(cur[1])
             break
-        #To avoid expand error, push every node on branch onto stack once
-        successors = problem.getSuccessors(cur[0])
+        #To avoid expand too much . Change the position pushing the node onto visited
+        successors = problem.getSuccessors(cur[0])        
         for succ in successors:            
             tmp = list(cur[1])
-            
-            if not succ[0] in visited:                                
+            if not succ[0] in visited:
+                #### visited different with dfs
+                visited.add(succ[0])
                 if succ[1] == 'North':
                     tmp.append(n)
                 elif succ[1] == 'South':
