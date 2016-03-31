@@ -138,12 +138,11 @@ def breadthFirstSearch(problem):
         Stack.append([h,[h[_ACTION]]])
     visited = {}
     visited[start] = True
-    step = []
-    res = recurBFS(Stack, step, visited, problem )
+    res = recurBFS(Stack, visited, problem )
     return res[1]
     util.raiseNotDefined()
 
-def recurBFS(currStack, step, visited, problem):
+def recurBFS(currStack, visited, problem):
     newStack = []
     for x in currStack:
         if x[0][_STATE] in visited:
@@ -157,7 +156,7 @@ def recurBFS(currStack, step, visited, problem):
             for h in Succ:
                 Stack.append([h, x[1]+[h[_ACTION]] ])
             newStack = newStack + Stack
-    return recurBFS(newStack, step, visited, problem )
+    return recurBFS(newStack, visited, problem )
     
                 
 
@@ -178,9 +177,30 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     "print heuristic(problem.getStartState(), problem)"
     
     "[Project 2] YOUR CODE HERE"
-    
+    start = problem.getStartState()
+    currStack = problem.getSuccessors(start)
+    StackA = util.PriorityQueue()
+    StackB = util.PriorityQueue()
+    for h in currStack:
+        heu = heuristic(h[_STATE], problem )
+        v = h[_COST] + heu 
+        StackA.push([h, [h[_ACTION]], h[_COST], heu, v, problem.isGoalState(h[_STATE]) ], v)
+    visited = {}
+    visited[start] = True
+    while True:
+        x = StackA.pop()
+        if problem.isGoalState(x[0][_STATE]):
+            return x[1]
+        elif x[0][_STATE] in visited:
+            continue
+        else:
+            visited[x[0][_STATE]] = True
+            Succ = problem.getSuccessors(x[0][_STATE])
+            for h in Succ:
+                heu = heuristic(h[_STATE], problem )
+                v = h[_COST] + x[_COST] + heu
+                StackA.push([h, x[1]+[h[_ACTION]], h[_COST] + x[_COST], heu, v, problem.isGoalState(h[_STATE]) ], v)
     util.raiseNotDefined()
-
 
 # Abbreviations
 astar = aStarSearch
