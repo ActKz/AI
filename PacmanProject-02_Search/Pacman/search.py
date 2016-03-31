@@ -102,10 +102,6 @@ def depthFirstSearch(problem):
 
 _STATE, _ACTION, _COST = 0, 1, 2
 from game import Directions
-s = Directions.SOUTH
-w = Directions.WEST
-n = Directions.NORTH
-e = Directions.EAST
 S = Directions.STOP
 def recurDFS(currStack, step, visited, problem ):
     for x in currStack:
@@ -132,9 +128,8 @@ def breadthFirstSearch(problem):
     "[Project 2] YOUR CODE HERE"    
     
     start = problem.getStartState()
-    currStack = problem.getSuccessors(start)
     Stack = []
-    for h in currStack:
+    for h in problem.getSuccessors(start):
         Stack.append([h,[h[_ACTION]]])
     visited = {}
     visited[start] = True
@@ -151,9 +146,8 @@ def recurBFS(currStack, visited, problem):
             visited[x[0][_STATE]] = True
             if problem.isGoalState(x[0][_STATE]):
                 return (True, x[1] )
-            Succ = problem.getSuccessors(x[0][_STATE])
             Stack = []
-            for h in Succ:
+            for h in problem.getSuccessors(x[0][_STATE]):
                 Stack.append([h, x[1]+[h[_ACTION]] ])
             newStack = newStack + Stack
     return recurBFS(newStack, visited, problem )
@@ -178,10 +172,8 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     
     "[Project 2] YOUR CODE HERE"
     start = problem.getStartState()
-    currStack = problem.getSuccessors(start)
     StackA = util.PriorityQueue()
-    StackB = util.PriorityQueue()
-    for h in currStack:
+    for h in problem.getSuccessors(start):
         heu = heuristic(h[_STATE], problem )
         v = h[_COST] + heu 
         StackA.push([h, [h[_ACTION]], h[_COST], heu, v, problem.isGoalState(h[_STATE]) ], v)
@@ -195,8 +187,7 @@ def aStarSearch(problem, heuristic=nullHeuristic):
             continue
         else:
             visited[x[0][_STATE]] = True
-            Succ = problem.getSuccessors(x[0][_STATE])
-            for h in Succ:
+            for h in problem.getSuccessors(x[0][_STATE]):
                 heu = heuristic(h[_STATE], problem )
                 v = h[_COST] + x[_COST] + heu
                 StackA.push([h, x[1]+[h[_ACTION]], h[_COST] + x[_COST], heu, v, problem.isGoalState(h[_STATE]) ], v)
