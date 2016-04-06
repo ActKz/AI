@@ -164,44 +164,25 @@ class MinimaxAgent(MultiAgentSearchAgent):
         """
         
         "[Project 3] YOUR CODE HERE"
-        # http://programmermagazine.github.io/201407/htm/focus3.html
         #print self.depth, self.evaluationFunction(), gameState.getLegalActions()
-        # Pacman is 0
-        def MAX(gameState, depth, ghostNum):
-            if depth == 0 or gameState.isWin() or gameState.isLose():
-                return self.evaluationFunction(gameState)
-            best = -(float("inf"))
-            legalActions = gameState.getLegalActions(0)
-            for action in legalActions:
-                best = max(best, MIN(gameState.generateSuccessor(0, action), depth - 1, 1, ghostNum))
-            return best
-        # Ghost
-        def MIN(gameState, depth, agentIndex, ghostNum):
-            if depth == 0 or gameState.isWin() or gameState.isLose():
-                return self.evaluationFunction(gameState)
-            best = float("inf")
+        # Pacman is 0 Ghost > 0
+        def MiniMax(gameState, depth, agentIndex, ghostNum):
+            if depth == self.depth or gameState.isWin() or gameState.isLose():
+                return (self.evaluationFunction(gameState), None)
+            bestScore = -(float("inf")) if agentIndex == 0 else float("inf")
+            bestAction = None
             legalActions = gameState.getLegalActions(agentIndex)
-            if agentIndex == ghostNum:
-                for action in legalActions:
-                    best = min(best, MAX(gameState.generateSuccessor(agentIndex, action), depth - 1, ghostNum))
-            else:
-                for action in legalActions:
-                    best = min(best, MIN(gameState.generateSuccessor(agentIndex, action), depth, agentIndex + 1, ghostNum))
-            return best
+            for action in legalActions:
+                newScore = MiniMax(gameState.generateSuccessor(agentIndex, action), depth, agentIndex + 1, ghostNum)[0] if agentIndex != ghostNum\
+                else MiniMax(gameState.generateSuccessor(agentIndex, action), depth + 1, 0, ghostNum)[0]
+                if agentIndex == 0 and newScore > bestScore or agentIndex != 0 and newScore < bestScore:
+                    bestScore, bestAction = newScore, action
+                    
+            return bestScore, bestAction
+
+        ghostNum = gameState.getNumAgents() - 1        
         
-        legalActions = gameState.getLegalActions()
-        best = -(float("inf"))
-        bestAction = None
-        ghostNum = gameState.getNumAgents() - 1
-        
-        for action in legalActions:
-            successor = gameState.generateSuccessor(0, action)
-            tmp = best
-            best = max(best, MIN(successor, self.depth, 1, ghostNum))
-            if best > tmp:
-                bestAction = action
-        
-        return bestAction
+        return MiniMax(gameState, 0, 0, ghostNum)[1]
         #util.raiseNotDefined()
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
