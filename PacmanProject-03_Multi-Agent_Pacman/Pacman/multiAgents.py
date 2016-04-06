@@ -86,22 +86,28 @@ class ReflexAgent(Agent):
         score = successorGameState.getScore()
         closest = 10000
         
-        print "FK"#, newPos, newFood, foodList
+        #print "FK"#, newPos, newFood, foodList
         #print foodDis
         ######################
+        # Win
+        if successorGameState.isWin():
+            score += 100000000
         # dodge ghost
         for gD in ghostDis:
             if gD < 2:
-                score -= 10000
+                score -= 1000000
         # search the closest food
         for dis in foodDis:
             if dis < closest:
                 closest = dis
-        # To avoid all scores are the same
+        score -= closest*10
+        # To avoid all scores are the same. Need to plus much, or pacman will stay in a small place
         if curNum > sucNum:
-            score += 20
-        score -= closest*2
-        print score, closest
+            score += 10000
+        # successorGameState include currentPosistion. But we want to keep going
+        if currentGameState.getPacmanPosition() == newPos:
+            score -= 1000
+        #print score, closest
         return score
 
 def scoreEvaluationFunction(currentGameState):
