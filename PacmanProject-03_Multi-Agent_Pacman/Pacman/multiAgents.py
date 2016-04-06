@@ -163,9 +163,46 @@ class MinimaxAgent(MultiAgentSearchAgent):
             Returns the total number of agents in the game
         """
         
-        "[Project 3] YOUR CODE HERE"        
+        "[Project 3] YOUR CODE HERE"
+        # http://programmermagazine.github.io/201407/htm/focus3.html
+        #print self.depth, self.evaluationFunction(), gameState.getLegalActions()
+        # Pacman is 0
+        def MAX(gameState, depth, ghostNum):
+            if depth == 0 or gameState.isWin() or gameState.isLose():
+                return self.evaluationFunction(gameState)
+            best = -(float("inf"))
+            legalActions = gameState.getLegalActions(0)
+            for action in legalActions:
+                best = max(best, MIN(gameState.generateSuccessor(0, action), depth - 1, 1, ghostNum))
+            return best
+        # Ghost
+        def MIN(gameState, depth, agentIndex, ghostNum):
+            if depth == 0 or gameState.isWin() or gameState.isLose():
+                return self.evaluationFunction(gameState)
+            best = float("inf")
+            legalActions = gameState.getLegalActions(agentIndex)
+            if agentIndex == ghostNum:
+                for action in legalActions:
+                    best = min(best, MAX(gameState.generateSuccessor(agentIndex, action), depth - 1, ghostNum))
+            else:
+                for action in legalActions:
+                    best = min(best, MIN(gameState.generateSuccessor(agentIndex, action), depth, agentIndex + 1, ghostNum))
+            return best
         
-        util.raiseNotDefined()
+        legalActions = gameState.getLegalActions()
+        best = -(float("inf"))
+        bestAction = None
+        ghostNum = gameState.getNumAgents() - 1
+        
+        for action in legalActions:
+            successor = gameState.generateSuccessor(0, action)
+            tmp = best
+            best = max(best, MIN(successor, self.depth, 1, ghostNum))
+            if best > tmp:
+                bestAction = action
+        
+        return bestAction
+        #util.raiseNotDefined()
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
