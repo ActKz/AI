@@ -165,7 +165,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
         
         "[Project 3] YOUR CODE HERE"
         #print self.depth, self.evaluationFunction(), gameState.getLegalActions()
-        # Pacman is 0 Ghost > 0
+        # Pacman is 0 Ghost > 0     one depth include 1 pacman & n ghost
         def MiniMax(gameState, depth, agentIndex, ghostNum):
             if depth == self.depth or gameState.isWin() or gameState.isLose():
                 return (self.evaluationFunction(gameState), None)
@@ -181,7 +181,6 @@ class MinimaxAgent(MultiAgentSearchAgent):
             return bestScore, bestAction
 
         ghostNum = gameState.getNumAgents() - 1        
-        
         return MiniMax(gameState, 0, 0, ghostNum)[1]
         #util.raiseNotDefined()
 
@@ -196,8 +195,32 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
         
         "[Project 3] YOUR CODE HERE"        
+        # http://web.cs.ucla.edu/~rosen/161/notes/alphabeta.html
+        # Pacman is 0 Ghost > 0     one depth include 1 pacman & n ghost    alpha for max(pacman)   beta for min(ghost)  for explored
+        def MiniMax(gameState, depth, agentIndex, alpha, beta, ghostNum):
+            if depth == self.depth or gameState.isWin() or gameState.isLose():
+                return (self.evaluationFunction(gameState), None)
+            bestScore = -(float("inf")) if agentIndex == 0 else float("inf")
+            bestAction = None
+            legalActions = gameState.getLegalActions(agentIndex)
+            for action in legalActions:
+                if alpha > beta:
+                    return bestScore, bestAction
+                newScore = MiniMax(gameState.generateSuccessor(agentIndex, action), depth, agentIndex + 1, alpha, beta, ghostNum)[0] if agentIndex != ghostNum\
+                else MiniMax(gameState.generateSuccessor(agentIndex, action), depth + 1, 0, alpha, beta, ghostNum)[0]
+                if agentIndex == 0 and newScore > bestScore or agentIndex != 0 and newScore < bestScore:
+                    bestScore, bestAction = newScore, action
+                if agentIndex == 0 and newScore > alpha:
+                    alpha = newScore
+                if agentIndex != 0 and newScore < beta:
+                    beta = newScore
+            return bestScore, bestAction
+
+        ghostNum = gameState.getNumAgents() - 1        
         
-        util.raiseNotDefined()
+        return MiniMax(gameState, 0, 0, -(float("inf")), float("inf"), ghostNum)[1]
+        
+        #util.raiseNotDefined()
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
