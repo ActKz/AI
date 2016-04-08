@@ -244,11 +244,12 @@ def betterEvaluationFunction(currentGameState):
 
       DESCRIPTION: <write something here so we know what you did>
       
-      situation ghost : After pacman eat the big food, pacman can eat ghosts.
+      situation ghost : After pacman eat a capsule, pacman can eat ghosts.
                         So I tried to separate to 2 parts.
                         Use a fraction = inverse of distance with each ghost, and then add it to score.
       situation food : Just like situation of ghost.
-      
+      situation capsule : Eating food is not enough to get avg 1000 score.
+                          So I want pacman to eat capsules to eat ghosts for getting higher score.
     """
     
     "[Project 3] YOUR CODE HERE"    
@@ -258,14 +259,15 @@ def betterEvaluationFunction(currentGameState):
     foodList = newFood.asList()
     ghostState = currentGameState.getGhostStates()
     ghostPos = currentGameState.getGhostPositions()
-    #### scaredTimes : If pacman eat the big food, then pacman can eat ghosts for a while. And scareTimes will start to count down to 0.
+    #### scaredTimes : If pacman eat a capsule, then pacman can eat ghosts for a while. And scareTimes will start to count down to 0.
     ####               >0 : can eat ghost  ==0 : dodge the ghost   
     scaredTimes = [state.scaredTimer for state in ghostState]
-    #### scaredState:  1 : eat  0 : dodge      sum > 3 : To avoid too close. Since after eating a ghost, iw rill reborn.
+    #### scaredState:  1 : eat  0 : dodge      sum > 3 : To avoid too close. Since after eating a ghost, it will reborn.
     scaredState = 1 if sum(scaredTimes) > 3 else 0
-    # distance with pacman
-    foodDis = [manhattanDistance(food, pos) for food in foodList] 
-    ghostDis = [manhattanDistance(pos, ghost) for ghost in ghostPos]      
+    # distance with pacman, ghost
+    foodDis = [manhattanDistance(food, pos) for food in foodList]
+    ghostDis = [manhattanDistance(pos, ghost) for ghost in ghostPos]
+    capDis = [manhattanDistance(pos, capsule) for capsule in currentGameState.getCapsules()]      
     # initial of score
     score = currentGameState.getScore()
     
@@ -282,7 +284,7 @@ def betterEvaluationFunction(currentGameState):
         fraction = 1.0/gD
         # eat ghost
         if scaredState == 1:
-            score += fraction
+            score += fraction*10
         # dodge ghost
         elif scaredState == 0:
             score -= fraction
@@ -292,7 +294,11 @@ def betterEvaluationFunction(currentGameState):
         fraction = 1.0/fD
         score += fraction*4
         
-    print score, scaredTimes
+    ### situation : capsule   fraction*3 for avoiding to hesitate
+    for cD in capDis:
+        fraction = 1.0/cD
+        score += fraction*3
+        
     return score
     
     util.raiseNotDefined()
