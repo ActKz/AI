@@ -243,9 +243,57 @@ def betterEvaluationFunction(currentGameState):
       evaluation function (question 5).
 
       DESCRIPTION: <write something here so we know what you did>
+      
+      situation ghost : After pacman eat the big food, pacman can eat ghosts.
+                        So I tried to separate to 2 parts.
+                        Use a fraction = inverse of distance with each ghost, and then add it to score.
+      situation food : Just like situation of ghost.
+      
     """
     
     "[Project 3] YOUR CODE HERE"    
+    # initial of pacman position, ghost state & position, food
+    pos = currentGameState.getPacmanPosition()
+    newFood = currentGameState.getFood()
+    foodList = newFood.asList()
+    ghostState = currentGameState.getGhostStates()
+    ghostPos = currentGameState.getGhostPositions()
+    #### scaredTimes : If pacman eat the big food, then pacman can eat ghosts for a while. And scareTimes will start to count down to 0.
+    ####               >0 : can eat ghost  ==0 : dodge the ghost   
+    scaredTimes = [state.scaredTimer for state in ghostState]
+    #### scaredState:  1 : eat  0 : dodge      sum > 3 : To avoid too close. Since after eating a ghost, iw rill reborn.
+    scaredState = 1 if sum(scaredTimes) > 3 else 0
+    # distance with pacman
+    foodDis = [manhattanDistance(food, pos) for food in foodList] 
+    ghostDis = [manhattanDistance(pos, ghost) for ghost in ghostPos]      
+    # initial of score
+    score = currentGameState.getScore()
+    
+    ######################
+    # Win
+    if currentGameState.isWin():
+        return float("inf")
+    # Lose
+    elif currentGameState.isLose():
+        return -(float("inf"))
+        
+    ### situationi : ghost
+    for gD in ghostDis:
+        fraction = 1.0/gD
+        # eat ghost
+        if scaredState == 1:
+            score += fraction
+        # dodge ghost
+        elif scaredState == 0:
+            score -= fraction
+    
+    ### situation : food
+    for fD in foodDis:
+        fraction = 1.0/fD
+        score += fraction*4
+        
+    print score, scaredTimes
+    return score
     
     util.raiseNotDefined()
 
