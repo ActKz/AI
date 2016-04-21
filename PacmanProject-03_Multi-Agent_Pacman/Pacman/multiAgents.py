@@ -126,7 +126,9 @@ class MinimaxAgent(MultiAgentSearchAgent):
     """
       Your minimax agent (question 2)
     """
-    def sample_minimax(self, gameState, depth, numofghost, agentIndex=0):
+    '''
+    #Sample from the internet
+    def minimax(self, gameState, depth, numofghost, agentIndex=0):
         if gameState.isWin() or gameState.isLose() or depth == 0:
             return ( self.evaluationFunction(gameState), )
         newDepth = (depth - 1) if (agentIndex == numofghost - 1) else depth
@@ -137,7 +139,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
             return max(StepList)
         else:
             return min(StepList)
-
+    '''
     def minimax(self, gameState, depth, numofghost, agentIndex=0):
         if gameState.isWin() or gameState.isLose() or depth == 0:
             return (self.evaluationFunction(gameState),)
@@ -188,29 +190,40 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
     """
       Your minimax agent with alpha-beta pruning (question 3)
     """
-    def alphabeta(self, gameState, depth, numofghost, agentIndex=0, alpha=(-float('inf'),), beta=(float('inf'),)):
+    def alphabeta(self, gameState, depth, numofghost, agentIndex=0, alpha=(-float("inf"),), beta=(float("inf"),)):
         if gameState.isWin() or gameState.isLose() or depth == 0:
-            return ( self.evaluationFunction(gameState), )
+            return (self.evaluationFunction(gameState),)
+
         newDepth = (depth - 1) if (agentIndex == numofghost - 1) else depth
         nextIndex = (agentIndex + 1) % numofghost
+        
+        #if(alpha[0]>beta[0]):
+        #    return -float("inf"),Directions.STOP
+
         if(agentIndex == 0):
-            curmax = (-float('inf'),)
+            value = (-float("inf"),)
             for action in gameState.getLegalActions(agentIndex):
-                curmax = max([curmax, (self.alphabeta(gameState.generateSuccessor(agentIndex, action), \
-                newDepth, numofghost ,nextIndex, alpha, beta)[0], action)])
-                if curmax >= beta:
-                    return curmax
-                alpha = max([alpha, curmax])
-            return alpha
+
+                if beta[0] < alpha[0]:
+                    #beta should be cut
+                    break
+                tmp = [self.alphabeta(gameState.generateSuccessor(agentIndex, action), \
+                newDepth, numofghost ,nextIndex, alpha, beta)[0],action]
+                value = value if value[0] > tmp[0] else tmp
+                alpha = value if value[0] > alpha[0] else alpha
+            return value
         else:
-            curmin = (float('inf'),)
+            value = (float("inf"),)
             for action in gameState.getLegalActions(agentIndex):
-                curmin = min([curmin, (self.alphabeta(gameState.generateSuccessor(agentIndex, action), \
-                newDepth, numofghost ,nextIndex, alpha, beta )[0], action)])
-                if curmin <= alpha:
-                    return curmin 
-                beta = min([beta, curmin])
-            return beta
+
+                if beta[0] < alpha[0]:
+                    #beta should be cut
+                    break 
+                tmp = [self.alphabeta(gameState.generateSuccessor(agentIndex, action), \
+                newDepth, numofghost ,nextIndex, alpha, beta)[0],action]
+                value = value if value[0] < tmp[0] else tmp
+                beta = value if value[0] < beta[0] else beta
+            return value
 
     def getAction(self, gameState):
         """
