@@ -28,7 +28,6 @@ class ReflexAgent(Agent):
       headers.
     """
 
-
     def getAction(self, gameState):
         """
         You do not need to change this method, but you're welcome to.
@@ -87,12 +86,12 @@ class ReflexAgent(Agent):
             distofood = util.manhattanDistance(foodpos, newPos)
             if distofood < mindistofood:
                 mindistofood = distofood
-
-        score = max(distoghost, 3) + successorGameState.getScore() + mindistofood*(-3) + (currentGameState.getNumFood() - successorGameState.getNumFood())
+        score = max(distoghost, 3)  + successorGameState.getScore() \
+        + mindistofood*(-2) + (currentGameState.getNumFood() - successorGameState.getNumFood())
         if action == Directions.STOP:
             score -= 10
-        #print('current score:',score)
         return score
+
 def scoreEvaluationFunction(currentGameState):
     """
       This default evaluation function just returns the score of the state.
@@ -127,6 +126,39 @@ class MinimaxAgent(MultiAgentSearchAgent):
     """
       Your minimax agent (question 2)
     """
+    def sample_minimax(self, gameState, depth, numofghost, agentIndex=0):
+        if gameState.isWin() or gameState.isLose() or depth == 0:
+            return ( self.evaluationFunction(gameState), )
+        newDepth = (depth - 1) if (agentIndex == numofghost - 1) else depth
+        nextIndex = (agentIndex + 1) % numofghost
+        StepList = [ (self.minimax(gameState.generateSuccessor(agentIndex, action), \
+        newDepth, numofghost ,nextIndex )[0], action) for action in gameState.getLegalActions(agentIndex)]
+        if(agentIndex == 0):
+            return max(StepList)
+        else:
+            return min(StepList)
+
+    def minimax(self, gameState, depth, numofghost, agentIndex=0):
+        if gameState.isWin() or gameState.isLose() or depth == 0:
+            return (self.evaluationFunction(gameState),)
+
+        newDepth = (depth - 1) if (agentIndex == numofghost - 1) else depth
+        nextIndex = (agentIndex + 1) % numofghost
+
+        if(agentIndex == 0):
+            bestValue = (-float("inf"),)
+            for action in gameState.getLegalActions(agentIndex):
+                value = [self.minimax(gameState.generateSuccessor(agentIndex, action), \
+                newDepth, numofghost ,nextIndex)[0],action]
+                bestValue = bestValue if bestValue[0] > value[0] else value
+            return bestValue
+        else:
+            bestValue = (float("inf"),)
+            for action in gameState.getLegalActions(agentIndex):
+                value = [self.minimax(gameState.generateSuccessor(agentIndex, action), \
+                newDepth, numofghost ,nextIndex)[0],action]
+                bestValue = bestValue if bestValue[0] < value[0] else value
+            return bestValue
 
     def getAction(self, gameState):
         """
@@ -146,14 +178,39 @@ class MinimaxAgent(MultiAgentSearchAgent):
             Returns the total number of agents in the game
         """
         
-        "[Project 3] YOUR CODE HERE"        
-        
+        "[Project 3] YOUR CODE HERE"
+        numofghosts = gameState.getNumAgents()
+        return self.minimax(gameState, self.depth, numofghosts)[1]
         util.raiseNotDefined()
 
+    
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
       Your minimax agent with alpha-beta pruning (question 3)
     """
+    def alphabeta(self, gameState, depth, numofghost, agentIndex=0, alpha=(-float('inf'),), beta=(float('inf'),)):
+        if gameState.isWin() or gameState.isLose() or depth == 0:
+            return ( self.evaluationFunction(gameState), )
+        newDepth = (depth - 1) if (agentIndex == numofghost - 1) else depth
+        nextIndex = (agentIndex + 1) % numofghost
+        if(agentIndex == 0):
+            curmax = (-float('inf'),)
+            for action in gameState.getLegalActions(agentIndex):
+                curmax = max([curmax, (self.alphabeta(gameState.generateSuccessor(agentIndex, action), \
+                newDepth, numofghost ,nextIndex, alpha, beta)[0], action)])
+                if curmax >= beta:
+                    return curmax
+                alpha = max([alpha, curmax])
+            return alpha
+        else:
+            curmin = (float('inf'),)
+            for action in gameState.getLegalActions(agentIndex):
+                curmin = min([curmin, (self.alphabeta(gameState.generateSuccessor(agentIndex, action), \
+                newDepth, numofghost ,nextIndex, alpha, beta )[0], action)])
+                if curmin <= alpha:
+                    return curmin 
+                beta = min([beta, curmin])
+            return beta
 
     def getAction(self, gameState):
         """
@@ -161,7 +218,8 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
         
         "[Project 3] YOUR CODE HERE"        
-        
+        numofghosts = gameState.getNumAgents()
+        return self.alphabeta(gameState, self.depth, numofghosts)[1]
         util.raiseNotDefined()
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
