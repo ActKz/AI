@@ -251,9 +251,6 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         ghost_n= gameState.getNumAgents() - 1
         bestAction=minmax(gameState, 0, self.depth, ghost_n,-(float("inf")), float("inf"))['action']
         return bestAction
-
-
-
         util.raiseNotDefined()
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
