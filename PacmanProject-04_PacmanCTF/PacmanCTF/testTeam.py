@@ -65,55 +65,59 @@ class ReflexCaptureAgent(CaptureAgent):
     #print('mii')
     CaptureAgent.registerInitialState(self, gameState)
 
+  def Max_Self(self,gameState,depth,alpha,beta):
+      if depth == 0:
+        return {"score":self.evaluationFunction(gameState),"action":"Self"}
+      legalMoves = gameState.getLegalActions(self.index)
+      if self.index ==0:
+          print "legal moves ",legalMoves
+      actions = [action for action in legalMoves if action != 'Stop' ]
+      best={"action":Directions.STOP,"score":float('-inf')}
+      for action in actions:
+        if self.index ==0:
+            print "index ",self.index,"looping...:",action
+        node = self.Min_Enemy(gameState.generateSuccessor(self.index,action), depth-1, alpha, beta)
+        if self.index ==0:
+            print "index ",self.index,"looped...:",action,node,best
+        #no enemy in sight
+        if(node['score'] > best['score']):
+          if self.index ==0:
+            print "Comparing...current act",action," node ",node," best ",best
+          best['score']=node['score']
+          best['action']=action
+        if best['score'] >= beta:
+          return best
+        alpha = max(alpha, best['score'])
+
+      return best
+
+  def Min_Enemy(self,gameState,depth,alpha,beta):
+    enemies = self.getOpponents(gameState)
+    enemies_inrange = [e for e in enemies if gameState.getAgentState(e).configuration != None ]
+    if not enemies_inrange or depth==0:
+      return {"score":self.evaluationFunction(gameState),"action":"Test"}
+    best={"action":Directions.STOP,"score":float('inf')}
+    for e in enemies_inrange:
+      legalMoves = gameState.getLegalActions(e)
+      actions = [action for action in legalMoves if action != 'Stop' ]
+      for action in actions:
+        node =  self.Max_Self(gameState.generateSuccessor(e,action), depth, alpha, beta)
+        if(node['score'] < best['score']):
+          best['score']=node['score']
+          best['action']=action
+        if best['score'] <= beta:
+          return best
+        beta = min (alpha, best['score'])
+
+    return best
+
+
   def chooseAction(self, gameState):
 
-    def minmax(gameState,mode,enemyId,depth,alpha,beta):
-        enemies = self.getOpponents(gameState)
-
-        while enemyId <2 and gameState.getAgentState(enemies[enemyId+1]).configuration == None:
-            enemyId+=1
-
-        if enemyId >2:
-            mode ="team"
-
-        if depth == 0:
-            return {"score":self.evaluationFunction(gameState),"action":None}
-
-        tmp_score= -float("inf") if mode == "team" else float("inf")
-        best={"action":Directions.STOP,"score":tmp_score}
-
-        if mode =="team":
-            actions=gameState.getLegalActions(self.index)
-        else:
-            actions=gameState.getLegalActions(enemyId)
-
-        for action in actions:
-            if alpha > beta:
-                return best
-            if enemyId < 2:
-                    node=minmax(gameState.generateSuccessor(enemies[enemyId], action), \
-                            "enemy",enemies[enemyId+1],depth, alpha,beta)
-            else:
-                    node=minmax(gameState.generateSuccessor(self.index, action), \
-                            "team",self.index, depth-1, alpha,beta)
-            if mode == "team":
-                if node['score'] > best['score']:
-                    best['score']=node['score']
-                    best['action']=action
-                if node['score']> alpha:
-                    alpha=node['score']
-            else:
-                if node['score'] < best['score']:
-                    best['score']=node['score']
-                    best['action']=action
-                if node['score'] < beta:
-                    beta=node['score']
-        return best
-
-
-    bestAction=minmax(gameState,"team", 0, 2,-(float("inf")), float("inf"))['action']
-    print bestAction
-    return bestAction
+    best=self.Max_Self(gameState,2,float("-inf"), float("inf"))
+    if self.index ==0:
+        print "returned action ", best
+    return best['action']
     util.raiseNotDefined()
 
 class OffensiveReflexAgent(ReflexCaptureAgent):
@@ -123,69 +127,58 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
   but it is by no means the best or only way to build an offensive agent.
   """
   def evaluationFunction(self, gameState):
-    pos = gameState.getAgentState(self.index).getPosition()
-    foodmap = self.getFood(gameState)
-    foodList = self.getFood(gameState).asList()
-    #ghostState = gameState.getGhostStates()
-    #ghostPos = gameState.getGhostPositions()
-    #### scaredTimes : If pacman eat a capsule, then pacman can eat ghosts for a while. And scareTimes will start to count down to 0.
-    ####               >0 : can eat ghost  ==0 : dodge the ghost
-    #scaredTimes = [state.scaredTimer for state in ghostState]
-    #### scaredState:  1 : eat  0 : dodge      sum > 3 : To avoid too close. Since after eating a ghost, it will reborn.
-    #scaredState = 1 if sum(scaredTimes) > 2 else 0
-    # distance with pacman, ghost
-    foodDis = [manhattanDistance(food, pos) for food in foodList]
-    #ghostDis = [manhattanDistance(pos, ghost) for ghost in ghostPos]
-    #capDis = [manhattanDistance(pos, capsule) for capsule in currentGameState.getCapsules()]
-    # initial of score
-    #score = gameState.getScore()
-    score = 0
+      enemies = self.getOpponents(gameState)
+      enemies_inrange = [e for e in enemies if gameState.getAgentState(e).configuration != None ]
+      pos = gameState.getAgentState(self.index).getPosition()
+      foodmap = self.getFood(gameState)
+      foodList = self.getFood(gameState).asList()
+      #### scaredTimes : If pacman eat a capsule, then pacman can eat ghosts for a while. And scareTimes will start to count down to 0.
+      ####               >0 : can eat ghost  ==0 : dodge the ghost
+      #scaredTimes = [state.scaredTimer for state in ghostState]
+      #### scaredState:  1 : eat  0 : dodge      sum > 3 : To avoid too close. Since after eating a ghost, it will reborn.
+      #scaredState = 1 if sum(scaredTimes) > 2 else 0
+      # distance with pacman, ghost
+      foodDis = [manhattanDistance(food, pos) for food in foodList]
+      #capDis = [manhattanDistance(pos, capsule) for capsule in currentGameState.getCapsules()]
+      # initial of score
+      score = gameState.getScore()
+      ######################
 
-    def findFood(currFood,currPos):
-        nearest=10000
-        target_food=None
-        foodmap=currFood.asList()
-        for f in foodmap:
-            distance=util.manhattanDistance(f,currPos)
-            if distance < nearest:
-                nearest=distance
-                target_food=f
+      ## situationi : ghost
+      #for e_dis in enemies_dist:
+      #    fraction = -e
+          # eat ghost
+          #if scaredState == 1:
+          #    score += fraction*8
+          # dodge ghost
+          #elif scaredState == 0:
+      #    score -= fraction
 
-        return distance
-    ######################
+      ### food distance
+      if foodList:
+          minDistance = min([self.getMazeDistance(pos, food) for food in foodList])
+          fraction=1.0/(minDistance+1)
+          score+=fraction
 
-    ### situationi : ghost
-    #for gD in ghostDis:
-    #    fraction = 1.0/gD
-    #    # eat ghost
-    #    if scaredState == 1:
-    #        score += fraction*8
-    #    # dodge ghost
-    #    elif scaredState == 0:
-    #        score -= fraction
+      #### situation : food amount
+      #for fD in foodDis:
+      #    fraction = 1.0/fD
+      #    if len(foodList)==1 and len(capDis)==2:
+      #        score += fraction*0.1
+      #    else:
+      #        score += fraction*3
 
-    ### food distance
-    minDistance = min([self.getMazeDistance(pos, food) for food in foodList])
-    fraction=1.0 / minDistance
-    score+=fraction*1000
+      #### situation : capsule   fraction*3 for avoiding to hesitate
+      #for cD in capDis:
+      #    fraction = 1.0/cD
+      #    if len(foodList)<=1 and len(capDis)==2:
+      #        score += fraction*5
+      #    else:
+      #        score += fraction*3
 
-    #### situation : food amount
-    #for fD in foodDis:
-    #    fraction = 1.0/fD
-    #    if len(foodList)==1 and len(capDis)==2:
-    #        score += fraction*0.1
-    #    else:
-    #        score += fraction*3
-
-    #### situation : capsule   fraction*3 for avoiding to hesitate
-    #for cD in capDis:
-    #    fraction = 1.0/cD
-    #    if len(foodList)<=1 and len(capDis)==2:
-    #        score += fraction*5
-    #    else:
-    #        score += fraction*3
-
-    return score
+      if self.index ==0:
+          print "returned score ",score
+      return score
 
 
 
@@ -197,7 +190,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
   such an agent.
   """
   def evaluationFunction(self, gameState):
-      return 1;
+      return 1
 
   def getFeatures(self, gameState, action):
     features = util.Counter()
