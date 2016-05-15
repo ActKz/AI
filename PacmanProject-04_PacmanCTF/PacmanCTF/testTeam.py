@@ -33,8 +33,8 @@ from util import manhattanDistance
 #################
 
 def createTeam(firstIndex, secondIndex, thirdIndex, isRed,
-               first = 'OffensiveReflexAgent', second = 'DefensiveReflexAgent',
-               third = 'DefensiveReflexAgent'):
+               first = 'OffensivealphabetaAgent', second = 'DefensivealphabetaAgent',
+               third = 'DefensivealphabetaAgent'):
   """
   This function should return a list of three agents that will form the
   team, initialized using firstIndex and secondIndex as their agent
@@ -55,9 +55,9 @@ def createTeam(firstIndex, secondIndex, thirdIndex, isRed,
 # Agents #
 ##########
 
-class ReflexCaptureAgent(CaptureAgent):
+class alphabetaCaptureAgent(CaptureAgent):
   """
-  A base class for reflex agents that chooses score-maximizing actions
+  A base class for alphabeta agents that chooses score-maximizing actions
   """
 
   def registerInitialState(self, gameState):
@@ -120,9 +120,9 @@ class ReflexCaptureAgent(CaptureAgent):
     return best['action']
     util.raiseNotDefined()
 
-class OffensiveReflexAgent(ReflexCaptureAgent):
+class OffensivealphabetaAgent(alphabetaCaptureAgent):
   """
-  A reflex agent that seeks food. This is an agent
+  A alphabeta agent that seeks food. This is an agent
   we give you to get an idea of what an offensive agent might look like,
   but it is by no means the best or only way to build an offensive agent.
   """
@@ -182,9 +182,9 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
 
 
 
-class DefensiveReflexAgent(ReflexCaptureAgent):
+class DefensivealphabetaAgent(alphabetaCaptureAgent):
   """
-  A reflex agent that keeps its side Pacman-free. Again,
+  A alphabeta agent that keeps its side Pacman-free. Again,
   this is to give you an idea of what a defensive agent
   could be like.  It is not the best or only way to make
   such an agent.
