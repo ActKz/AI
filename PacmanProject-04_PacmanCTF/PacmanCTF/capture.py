@@ -4,7 +4,7 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -173,7 +173,7 @@ class GameState:
 
   def getBlueCapsules(self):
     return halfList(self.data.capsules, self.data.food, red = False)
-  # TODO get red blue flag implement 
+  # TODO get red blue flag implement
   def getRedFlags(self):
     return halfList(self.data.flags, self.data.food, red = True)
 
@@ -245,7 +245,7 @@ class GameState:
     Returns a list of positions (x,y) of the remaining capsules.
     """
     return self.data.capsules
-# TODO get remaining flags    
+# TODO get remaining flags
   def getFlags(self):
     """
     Returns a list of positions (x,y) of the remaining flags.
@@ -422,7 +422,7 @@ class CaptureRules:
             redCount += agentState.numReturned
           else:
             blueCount += agentState.numReturned
-        
+
         if blueCount >= foodToWin:#state.getRedFood().count() == MIN_FOOD:
           print 'The Blue team has returned at least %d of the opponents\' dots.' % foodToWin
         elif redCount >= foodToWin:#state.getBlueFood().count() == MIN_FOOD:
@@ -560,19 +560,19 @@ class AgentRules:
           agent.numCarrying += 1
           break # the above should only be true for one agent...
 
-      # do all the score and food grid maintainenace 
+      # do all the score and food grid maintainenace
       state.data.scoreChange += score
       state.data.food = state.data.food.copy()
       state.data.food[x][y] = False
       state.data._foodEaten = position
       #if (isRed and state.getBlueFood().count() == MIN_FOOD) or (not isRed and state.getRedFood().count() == MIN_FOOD):
       #  state.data._win = True
-      
+
     # Eat flag
-    if isRed: 
+    if isRed:
         myFlags = state.getBlueFlags()
         teamIndicesFunc = state.getRedTeamIndices
-    else: 
+    else:
         myFlags = state.getRedFlags()
         teamIndicesFunc = state.getBlueTeamIndices
     if( position in myFlags ):
@@ -601,7 +601,7 @@ class AgentRules:
   # TODO combine decrement with flag(or increement)
 
   def incrementScorer(state, agentState, agentIndex, isRed):
-    if agentState.ownFlag: 
+    if agentState.ownFlag:
       if isRed:
         state.data.scoreChange += FLAG_SCORE_RATE
       else:
@@ -626,7 +626,7 @@ class AgentRules:
     # ok so agentState is this:
     if (agentState.numCarrying == 0):
       return
-    
+
     # first, score changes!
     # we HACK pack that ugly bug by just determining if its red based on the first position
     # to die...
@@ -721,26 +721,26 @@ class AgentRules:
 # TODO when pacman has flag it could be eaten by the other pacman or ghost
   def checkDeath( state, agentIndex):
     agentState = state.data.agentStates[agentIndex]
-    
+
     if state.isOnRedTeam(agentIndex):
       otherTeam = state.getBlueTeamIndices()
     else:
       otherTeam = state.getRedTeamIndices()
-      
+
     if agentState.isPacman: # Agent is a pacman
       for index in otherTeam:
-          
+
         otherAgentState = state.data.agentStates[index]
         if otherAgentState.isPacman: continue
-            
+
         ghostPosition = otherAgentState.getPosition()
         if ghostPosition == None: continue
-        
+
         # collision
         if manhattanDistance( ghostPosition, agentState.getPosition() ) <= COLLISION_TOLERANCE:
           if otherAgentState.scaredTimer <= 0 and not otherAgentState.ownFlag: # other agent is a ghost without flag
             AgentRules.dumpFoodFromDeath(state, agentState, agentIndex)
-            
+
             # our pacman die
             score = KILL_POINTS_PACMAN
             if state.isOnRedTeam(agentIndex): # if we are red
@@ -750,7 +750,7 @@ class AgentRules:
             agentState.ownFlag = False
             agentState.configuration = agentState.start
             agentState.scaredTimer = 0
-            
+
           else: # other agent is a scared ghost
             # other ghost die
             score = KILL_POINTS_GHOST
@@ -761,11 +761,11 @@ class AgentRules:
             otherAgentState.ownFlag = False
             otherAgentState.configuration = otherAgentState.start
             otherAgentState.scaredTimer = 0
-            
+
             if agentState.ownFlag:
               AgentRules.dumpFoodFromDeath(state, agentState, agentIndex)
-              
-              score = KILL_POINTS_PACMAN              
+
+              score = KILL_POINTS_PACMAN
               if state.isOnRedTeam(agentIndex):
                 score = -score
               state.data.scoreChange += score
@@ -773,21 +773,21 @@ class AgentRules:
               agentState.ownFlag = False
               agentState.configuration = agentState.start
               agentState.scaredTimer = 0
-                
+
     else: # Agent is a ghost
       for index in otherTeam:
-          
+
         otherAgentState = state.data.agentStates[index]
         if not otherAgentState.isPacman: continue
-            
+
         pacPos = otherAgentState.getPosition()
         if pacPos == None: continue
-        
+
         # collision
         if manhattanDistance( pacPos, agentState.getPosition() ) <= COLLISION_TOLERANCE:
           if agentState.scaredTimer <= 0 and not agentState.ownFlag: # our agent is a ghost without flag
             AgentRules.dumpFoodFromDeath(state, otherAgentState, agentIndex)
-            
+
             # other pacman die
             score = KILL_POINTS_PACMAN
             if not state.isOnRedTeam(agentIndex):
@@ -797,7 +797,7 @@ class AgentRules:
             otherAgentState.ownFlag = False
             otherAgentState.configuration = otherAgentState.start
             otherAgentState.scaredTimer = 0
-            
+
           else: # our agent is a scared ghost
             score = KILL_POINTS_GHOST
             if state.isOnRedTeam(agentIndex):
@@ -807,10 +807,10 @@ class AgentRules:
             agentState.ownFlag = False
             agentState.configuration = agentState.start
             agentState.scaredTimer = 0
-            
-            if otherAgentState.ownFlag:  
-              AgentRules.dumpFoodFromDeath(state, otherAgentState, agentIndex)      
-              
+
+            if otherAgentState.ownFlag:
+              AgentRules.dumpFoodFromDeath(state, otherAgentState, agentIndex)
+
               score = KILL_POINTS_PACMAN
               if not state.isOnRedTeam(agentIndex):
                 score = -score
@@ -987,9 +987,9 @@ def readCommand( argv ):
     else:
       l = layout.getLayout( options.layout )
     if l == None: raise Exception("The layout " + options.layout + " cannot be found")
-    
+
     layouts.append(l)
-    
+
   args['layouts'] = layouts
   args['length'] = options.time
   args['numGames'] = options.numGames
@@ -1056,10 +1056,10 @@ def replayGame( layout, agents, actions, display, length, redTeamName, blueTeamN
       display.update( state.data )
       # Allow for game specific conditions (winning, losing, etc.)
       rules.process(state, game)
-    
+
     # Display the result
     print 'Score: %d' % state.data.score
-    
+
     display.finish()
 
 def runGames( layouts, agents, display, length, numGames, record, numTraining, redTeamName, blueTeamName, muteAgents=False, catchExceptions=False ):

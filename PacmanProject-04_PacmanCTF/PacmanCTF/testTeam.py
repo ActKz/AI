@@ -33,8 +33,8 @@ from util import manhattanDistance
 #################
 
 def createTeam(firstIndex, secondIndex, thirdIndex, isRed,
-               first = 'OffensivealphabetaAgent', second = 'DefensivealphabetaAgent',
-               third = 'DefensivealphabetaAgent'):
+               first = 'HybridAgent1', second = 'HybridAgent1',
+               third = 'HybridAgent1'):
   """
   This function should return a list of three agents that will form the
   team, initialized using firstIndex and secondIndex as their agent
@@ -55,59 +55,54 @@ def createTeam(firstIndex, secondIndex, thirdIndex, isRed,
 # Agents #
 ##########
 
-class alphabetaCaptureAgent(CaptureAgent):
+class AlphaBetaCaptureAgent(CaptureAgent):
   """
-  A base class for alphabeta agents that chooses score-maximizing actions
+  A base class for AlphaBeta agents that chooses score-maximizing actions
   """
 
   def registerInitialState(self, gameState):
     self.start = gameState.getAgentPosition(self.index)
     #print('mii')
     CaptureAgent.registerInitialState(self, gameState)
+    self.defense_pos=[(12,14),(21,12),(15,7),(16,8),(10,3),(19,3)]
+    self.death=[0,0,0,0,0,0]
 
   def Max_Self(self,gameState,depth,alpha,beta):
       if depth == 0:
         return {"score":self.evaluationFunction(gameState),"action":"Self"}
       legalMoves = gameState.getLegalActions(self.index)
-      if self.index ==0:
-          print "legal moves ",legalMoves
-      actions = [action for action in legalMoves if action != 'Stop' ]
+      #actions = [action for action in legalMoves if action != 'Stop' ]
+      actions = legalMoves
       best={"action":Directions.STOP,"score":float('-inf')}
       for action in actions:
-        if self.index ==0:
-            print "index ",self.index,"looping...:",action
         node = self.Min_Enemy(gameState.generateSuccessor(self.index,action), depth-1, alpha, beta)
-        if self.index ==0:
-            print "index ",self.index,"looped...:",action,node,best
         #no enemy in sight
         if(node['score'] > best['score']):
-          if self.index ==0:
-            print "Comparing...current act",action," node ",node," best ",best
           best['score']=node['score']
           best['action']=action
         if best['score'] >= beta:
           return best
         alpha = max(alpha, best['score'])
-
       return best
 
   def Min_Enemy(self,gameState,depth,alpha,beta):
     enemies = self.getOpponents(gameState)
     enemies_inrange = [e for e in enemies if gameState.getAgentState(e).configuration != None ]
     if not enemies_inrange or depth==0:
-      return {"score":self.evaluationFunction(gameState),"action":"Test"}
+      return {"score":self.evaluationFunction(gameState),"action":None}
     best={"action":Directions.STOP,"score":float('inf')}
     for e in enemies_inrange:
       legalMoves = gameState.getLegalActions(e)
-      actions = [action for action in legalMoves if action != 'Stop' ]
+      #actions = [action for action in legalMoves if action != 'Stop' ]
+      actions = legalMoves
       for action in actions:
         node =  self.Max_Self(gameState.generateSuccessor(e,action), depth, alpha, beta)
         if(node['score'] < best['score']):
           best['score']=node['score']
           best['action']=action
-        if best['score'] <= beta:
+        if best['score'] <= alpha:
           return best
-        beta = min (alpha, best['score'])
+        beta = min (beta, best['score'])
 
     return best
 
@@ -115,23 +110,33 @@ class alphabetaCaptureAgent(CaptureAgent):
   def chooseAction(self, gameState):
 
     best=self.Max_Self(gameState,2,float("-inf"), float("inf"))
-    if self.index ==0:
-        print "returned action ", best
+    selfState = gameState.getAgentState(self.index).getPosition()
     return best['action']
     util.raiseNotDefined()
 
-class OffensivealphabetaAgent(alphabetaCaptureAgent):
+class OffensiveAlphaBetaAgent(AlphaBetaCaptureAgent):
   """
-  A alphabeta agent that seeks food. This is an agent
+  A AlphaBeta agent that seeks food. This is an agent
   we give you to get an idea of what an offensive agent might look like,
   but it is by no means the best or only way to build an offensive agent.
   """
   def evaluationFunction(self, gameState):
+      selfState = gameState.getAgentState(self.index)
+      pos = selfState.getPosition()
+      isPacman = selfState.isPacman
       enemies = self.getOpponents(gameState)
+      #in range I can see
       enemies_inrange = [e for e in enemies if gameState.getAgentState(e).configuration != None ]
-      pos = gameState.getAgentState(self.index).getPosition()
+      #position
+      enemies_pos = [gameState.getAgentState(e).getPosition() for e in enemies_inrange]
+      #in range enemies distance
+      enemies_dist = [self.getMazeDistance(pos,ePos) for ePos in enemies_pos]
+      #enemies who can see me
+      enemies_nearby = [dis for dis in enemies_dist if dis < 5]
       foodmap = self.getFood(gameState)
       foodList = self.getFood(gameState).asList()
+      flagMap = self.getFlags(gameState)
+      flagList = flagMap
       #### scaredTimes : If pacman eat a capsule, then pacman can eat ghosts for a while. And scareTimes will start to count down to 0.
       ####               >0 : can eat ghost  ==0 : dodge the ghost
       #scaredTimes = [state.scaredTimer for state in ghostState]
@@ -139,26 +144,40 @@ class OffensivealphabetaAgent(alphabetaCaptureAgent):
       #scaredState = 1 if sum(scaredTimes) > 2 else 0
       # distance with pacman, ghost
       foodDis = [manhattanDistance(food, pos) for food in foodList]
-      #capDis = [manhattanDistance(pos, capsule) for capsule in currentGameState.getCapsules()]
+      capDis = [self.getMazeDistance(pos, capsule) for capsule in self.getCapsules(gameState)]
       # initial of score
-      score = gameState.getScore()
+      score = self.getScore(gameState)
       ######################
 
       ## situationi : ghost
-      #for e_dis in enemies_dist:
-      #    fraction = -e
-          # eat ghost
-          #if scaredState == 1:
-          #    score += fraction*8
-          # dodge ghost
-          #elif scaredState == 0:
-      #    score -= fraction
+      if enemies_dist:
+          for e_dis in enemies_dist:
+              fraction = 1.0/e_dis
+              if isPacman:
+                  score -= fraction * 100
+              else:
+                  score += fraction * 2.0
 
-      ### food distance
-      if foodList:
-          minDistance = min([self.getMazeDistance(pos, food) for food in foodList])
-          fraction=1.0/(minDistance+1)
-          score+=fraction
+      ### try to get flag
+      if flagList:
+          distance = self.getMazeDistance(pos, flagList[0])
+          fraction=1.0/(distance+1)
+          score+=fraction * 4
+
+      #has flag!! return!!
+      if selfState.ownFlag:
+          feature= 1.0/(self.getMazeDistance(pos,(1,1))+1)
+          score+= feature * 100
+      else:
+          if foodList and not enemies_dist:
+              minDistance = min([self.getMazeDistance(pos, food) for food in foodList])
+              fraction=1.0/(minDistance+1)
+              score+=fraction
+          else:
+              feature= 1.0/(self.getMazeDistance(pos,self.defense_pos[self.index])+1)
+              score+= feature * 3
+
+
 
       #### situation : food amount
       #for fD in foodDis:
@@ -168,54 +187,105 @@ class OffensivealphabetaAgent(alphabetaCaptureAgent):
       #    else:
       #        score += fraction*3
 
-      #### situation : capsule   fraction*3 for avoiding to hesitate
-      #for cD in capDis:
-      #    fraction = 1.0/cD
-      #    if len(foodList)<=1 and len(capDis)==2:
-      #        score += fraction*5
-      #    else:
-      #        score += fraction*3
+      ### situation : capsule   fraction*3 for avoiding to hesitate
 
-      if self.index ==0:
-          print "returned score ",score
       return score
 
 
 
-class DefensivealphabetaAgent(alphabetaCaptureAgent):
+class DefensiveAlphaBetaAgent(AlphaBetaCaptureAgent):
   """
-  A alphabeta agent that keeps its side Pacman-free. Again,
+  A AlphaBeta agent that keeps its side Pacman-free. Again,
   this is to give you an idea of what a defensive agent
   could be like.  It is not the best or only way to make
   such an agent.
   """
   def evaluationFunction(self, gameState):
-      return 1
+      score = gameState.getScore()
+      myState = gameState.getAgentState(self.index)
+      myPos = myState.getPosition()
+      enemies = self.getOpponents(gameState)
+      enemy_snoar = [gameState.getAgentDistances()[e] for e in enemies]
+      ourfoodmap = self.getFoodYouAreDefending(gameState)
+      ourfoodList = ourfoodmap.asList()
 
-  def getFeatures(self, gameState, action):
-    features = util.Counter()
-    successor = self.getSuccessor(gameState, action)
+      # Computes whether we're on defense (1) or offense (0)
+      # Computes distance to invaders we can see
+      enemies = [gameState.getAgentState(i) for i in self.getOpponents(gameState)]
+      invaders = [a for a in enemies if a.isPacman and a.getPosition() != None]
+      if len(invaders) > 0:
+          dists = [self.getMazeDistance(myPos, a.getPosition()) for a in invaders]
+          score +=1.0 / min(dists)
+      else:
+          score += 1.0/(self.getMazeDistance(myPos,self.defense_pos[self.index])+1)
 
-    myState = successor.getAgentState(self.index)
-    myPos = myState.getPosition()
+      return score
 
-    # Computes whether we're on defense (1) or offense (0)
-    features['onDefense'] = 1
-    if myState.isPacman: features['onDefense'] = 0
+class HybridAgent(AlphaBetaCaptureAgent):
+  """
+  A AlphaBeta agent that keeps its side Pacman-free. Again,
+  this is to give you an idea of what a defensive agent
+  could be like.  It is not the best or only way to make
+  such an agent.
+  """
+  def evaluationFunction(self, gameState):
+      score = gameState.getScore()
+      myState = gameState.getAgentState(self.index)
+      myPos = myState.getPosition()
+      enemies = self.getOpponents(gameState)
+      enemy_snoar = [gameState.getAgentDistances()[e] for e in enemies]
+      ourfoodmap = self.getFoodYouAreDefending(gameState)
+      ourfoodList = ourfoodmap.asList()
 
-    # Computes distance to invaders we can see
-    enemies = [successor.getAgentState(i) for i in self.getOpponents(successor)]
-    invaders = [a for a in enemies if a.isPacman and a.getPosition() != None]
-    features['numInvaders'] = len(invaders)
-    if len(invaders) > 0:
-      dists = [self.getMazeDistance(myPos, a.getPosition()) for a in invaders]
-      features['invaderDistance'] = min(dists)
+      enemies = [gameState.getAgentState(i) for i in self.getOpponents(gameState)]
+      invaders = [a for a in enemies if a.isPacman and a.getPosition() != None]
+      if len(invaders) > 0:
+          dists = [self.getMazeDistance(myPos, a.getPosition()) for a in invaders]
+          score +=1.0 / min(dists)
+      elif myPos != self.defense_pos[self.index]: # get to defense point
+          score += 1.0/(self.getMazeDistance(myPos,self.defense_pos[self.index])+1)
 
-    if action == Directions.STOP: features['stop'] = 2
-    rev = Directions.REVERSE[gameState.getAgentState(self.index).configuration.direction]
-    if action == rev: features['reverse'] = 1
+      return score
 
-    return features
+class HybridAgent1(AlphaBetaCaptureAgent):
+  """
+  A AlphaBeta agent that keeps its side Pacman-free. Again,
+  this is to give you an idea of what a defensive agent
+  could be like.  It is not the best or only way to make
+  such an agent.
+  """
+  def evaluationFunction(self, gameState):
+      myState = gameState.getAgentState(self.index)
+      myPos = myState.getPosition()
+      enemies = self.getOpponents(gameState) #all enemies
+      #in range I can see
+      enemies_inrange = [e for e in enemies if gameState.getAgentState(e).configuration != None ]
+      #position
+      enemies_pos = [gameState.getAgentState(e).getPosition() for e in enemies_inrange]
+      #in range enemies distance
+      enemies_dist = [self.getMazeDistance(myPos,ePos) for ePos in enemies_pos]
+      score = self.getScore(gameState)
+      ourfoodmap = self.getFoodYouAreDefending(gameState)
+      ourfoodList = ourfoodmap.asList()
 
-  def getWeights(self, gameState, action):
-    return {'numInvaders': -1000, 'onDefense': 100, 'invaderDistance': -10, 'stop': -100, 'reverse': -2}
+      enemies = [gameState.getAgentState(i) for i in self.getOpponents(gameState)]
+      invaders = [a for a in enemies if a.isPacman and a.getPosition() != None]
+      if len(invaders) > 0:
+          dists = [self.getMazeDistance(myPos, a.getPosition()) for a in invaders]
+          feature = 1.0/(min(dists)+1)
+          score +=feature
+      elif myPos != self.defense_pos[self.index]: # get to defense point
+          feature = 1.0/(self.getMazeDistance(myPos,self.defense_pos[self.index])+1)
+          score+=feature * 2
+
+      if enemies_dist:
+          print("ene",enemies_dist)
+          for e_dis in enemies_dist:
+              fraction = 1.0/(e_dis+1)
+              if myState.isPacman:
+                  score -= fraction * 10
+              else:
+                  score += fraction * 2.0
+
+      return score
+
