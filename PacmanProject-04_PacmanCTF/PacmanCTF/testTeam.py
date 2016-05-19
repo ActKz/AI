@@ -64,8 +64,10 @@ class AlphaBetaCaptureAgent(CaptureAgent):
     self.start = gameState.getAgentPosition(self.index)
     #print('mii')
     CaptureAgent.registerInitialState(self, gameState)
-    self.defense_pos=[(12,14),(21,12),(15,7),(16,8),(10,3),(19,3)]
+    self.defense_pos=[(12,13),(20,12),(14,7),(17,8),(11,3),(19,2)]
+    #self.defense_pos=[(28,10),(21,12),(15,7),(16,8),(10,3),(19,3)]
     self.death=[0,0,0,0,0,0]
+    self.dead_road=[(28,10),(24,6)]
 
   def Max_Self(self,gameState,depth,alpha,beta):
       if depth == 0:
@@ -135,6 +137,7 @@ class OffensiveAlphaBetaAgent(AlphaBetaCaptureAgent):
       enemies_nearby = [dis for dis in enemies_dist if dis < 5]
       foodmap = self.getFood(gameState)
       foodList = self.getFood(gameState).asList()
+      foodDis = [manhattanDistance(food, pos) for food in foodList]
       flagMap = self.getFlags(gameState)
       flagList = flagMap
       #### scaredTimes : If pacman eat a capsule, then pacman can eat ghosts for a while. And scareTimes will start to count down to 0.
@@ -143,7 +146,6 @@ class OffensiveAlphaBetaAgent(AlphaBetaCaptureAgent):
       #### scaredState:  1 : eat  0 : dodge      sum > 3 : To avoid too close. Since after eating a ghost, it will reborn.
       #scaredState = 1 if sum(scaredTimes) > 2 else 0
       # distance with pacman, ghost
-      foodDis = [manhattanDistance(food, pos) for food in foodList]
       capDis = [self.getMazeDistance(pos, capsule) for capsule in self.getCapsules(gameState)]
       # initial of score
       score = self.getScore(gameState)
@@ -201,7 +203,7 @@ class DefensiveAlphaBetaAgent(AlphaBetaCaptureAgent):
   such an agent.
   """
   def evaluationFunction(self, gameState):
-      score = gameState.getScore()
+      score = self.getScore(gameState)
       myState = gameState.getAgentState(self.index)
       myPos = myState.getPosition()
       enemies = self.getOpponents(gameState)
@@ -229,13 +231,11 @@ class HybridAgent(AlphaBetaCaptureAgent):
   such an agent.
   """
   def evaluationFunction(self, gameState):
-      score = gameState.getScore()
+      score = self.getScore(gameState)
       myState = gameState.getAgentState(self.index)
       myPos = myState.getPosition()
       enemies = self.getOpponents(gameState)
       enemy_snoar = [gameState.getAgentDistances()[e] for e in enemies]
-      ourfoodmap = self.getFoodYouAreDefending(gameState)
-      ourfoodList = ourfoodmap.asList()
 
       enemies = [gameState.getAgentState(i) for i in self.getOpponents(gameState)]
       invaders = [a for a in enemies if a.isPacman and a.getPosition() != None]
@@ -267,6 +267,9 @@ class HybridAgent1(AlphaBetaCaptureAgent):
       score = self.getScore(gameState)
       ourfoodmap = self.getFoodYouAreDefending(gameState)
       ourfoodList = ourfoodmap.asList()
+      foodmap = self.getFood(gameState)
+      foodList = self.getFood(gameState).asList()
+      foodDis = [manhattanDistance(food, myPos) for food in foodList]
 
       enemies = [gameState.getAgentState(i) for i in self.getOpponents(gameState)]
       invaders = [a for a in enemies if a.isPacman and a.getPosition() != None]
@@ -277,9 +280,12 @@ class HybridAgent1(AlphaBetaCaptureAgent):
       elif myPos != self.defense_pos[self.index]: # get to defense point
           feature = 1.0/(self.getMazeDistance(myPos,self.defense_pos[self.index])+1)
           score+=feature * 2
+      elif myPos == self.defense_pos[self.index]: # stay
+          feature = 1
+          score+=feature * 2
+
 
       if enemies_dist:
-          print("ene",enemies_dist)
           for e_dis in enemies_dist:
               fraction = 1.0/(e_dis+1)
               if myState.isPacman:
