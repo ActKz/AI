@@ -333,17 +333,28 @@ class HybridAgent1(AlphaBetaCaptureAgent):
             #if score is Lose, changing to attack mode(? together and attack specific entry
             #else:
 #           print self.index,inEye[self.index]
-            if len(invaders) == sum(inEye) and inEye[self.index] == 0:
-                agentMode[self.index] = mode.attack
-                self.try_attack[self.index] = True
+#           if len(invaders) == sum(inEye) and inEye[self.index] == 0:
+#               agentMode[self.index] = mode.attack
+#               self.try_attack[self.index] = True
                 
 
         elif agentMode[self.index] == mode.attack:
-            if self.index == 0:
-                print agentMode[self.index]
+
             if self.must_eat[self.index] in foodList:
+                if self.index == 0:
+                    print agentMode[self.index]
                 feature = 1.0/self.getMazeDistance(myPos,self.must_eat[self.index])
                 score+=feature * 5
+            elif inEye[self.index] == 0:
+                if self.getFlags(gameState):
+                    feature = 1.0/self.getMazeDistance(myPos, self.getFlags(gameState)[0])
+                    score+=feature*5
+                if capsulesList:
+                    feature = 1.0/min(capsulesList)
+                    score += feature * 3
+                if foodMazeDis:
+                    feature = 1.0/min(foodMazeDis)
+                    score += feature
             #draw or win(positive score and isRed OR negative score and isBlue)
 #           elif not self.try_attack[self.index] and (gameState.getScore() == 0 or (gameState.getScore()>0 and self.getTeam(gameState)[0]==0) or (gameState.getScore()<0 and self.getTeam(gameState)[0]==1)):
             elif (gameState.getScore() == 0 or (gameState.getScore()>0 and self.getTeam(gameState)[0]==0) or (gameState.getScore()<0 and self.getTeam(gameState)[0]==1)):
