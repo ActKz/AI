@@ -323,7 +323,7 @@ class HybridAgent1(AlphaBetaCaptureAgent):
                     #if i see one, chase
                     dists = [self.getMazeDistance(myPos, a.getPosition()) for a in invaders]
                     feature = 1.0/(min(dists)+1)
-                    score +=feature
+                    score +=feature*5
                 elif myPos != self.defense_pos[self.index]: # get to defense point
                     feature = 1.0/(self.getMazeDistance(myPos,self.defense_pos[self.index])+1)
                     score+=feature * 2
