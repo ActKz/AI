@@ -292,6 +292,8 @@ class HybridAgent1(AlphaBetaCaptureAgent):
         ghostsDist = [self.getMazeDistance(myPos, ghost.getPosition()) for ghost in ghosts]
         invaders = [a for a in enemies if a.isPacman and a.getPosition() != None]
         defendingFlag = self.getFlagsYouAreDefending(gameState)
+
+
         #agentMode define in the beginning
         if myState.ownFlag:
             agentMode[self.index] = mode.ownFlag
@@ -311,23 +313,28 @@ class HybridAgent1(AlphaBetaCaptureAgent):
             score+=feature*10
 
         if agentMode[self.index] == mode.defend:
-            if len(invaders) > 0 and inEye[self.index] > 0:
+            if len(invaders) > 0 and inEye[self.index] > 0 and not myState.isPacman:
                 #if i see one, chase
                 dists = [self.getMazeDistance(myPos, a.getPosition()) for a in invaders]
                 feature = 1.0/(min(dists)+1)
-                score +=feature*5
+                score +=feature*6
             elif ((self.index == 0 and gameState.getScore()<=0) or (self.index == 1 and gameState.getScore()>=0)) and inEye[self.index] == 0:
+                if self.index == 0:
+                    print agentMode[self.index],2
                 agentMode[self.index] = mode.attack
             elif myPos != self.defense_pos[self.index]: # get to defense point
+                if self.index == 0:
+                    print agentMode[self.index],3
                 feature = 1.0/(self.getMazeDistance(myPos,self.defense_pos[self.index])+1)
                 score+=feature * 2
             elif myPos == self.defense_pos[self.index]: # stay
+                if self.index == 0:
+                    print agentMode[self.index],4
                 feature = 1
                 score+=feature * 2
             #if score is Lose, changing to attack mode(? together and attack specific entry
             #else:
                 
-
         if agentMode[self.index] == mode.attack:
 
             if self.must_eat[self.index] in foodList:
@@ -336,23 +343,23 @@ class HybridAgent1(AlphaBetaCaptureAgent):
             else:
                 if self.getFlags(gameState):
                     feature = 1.0/(self.getMazeDistance(myPos, self.getFlags(gameState)[0])+1)
-                    score+=feature*5
+                    score+=feature*10
                 if capsulesDist:
                     feature = 1.0/(min(capsulesDist)+1)
                     score += feature * 3
                 if foodMazeDist:
                     feature = 1.0/(min(foodMazeDist)+1)
-                    score += feature
+                    score += feature 
                 if (gameState.getScore()>0 and self.getTeam(gameState)[0]==0) or (gameState.getScore()<0 and self.getTeam(gameState)[0]==1):
                     agentMode[self.index] = mode.defend
 
-        if enemies_dist:
-            for e_dis in enemies_dist:
-                fraction = 1.0/(e_dis+1)
-                if myState.isPacman:
-                    score -= fraction * 10
-                else:
-                    score += fraction * 2.0
+#       if enemies_dist:
+#           for e_dis in enemies_dist:
+#               fraction = 1.0/(e_dis+1)
+#               if myState.isPacman:
+#                   score -= fraction * 10
+#               else:
+#                   score += fraction * 2.0
  
         return score
 
