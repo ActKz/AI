@@ -292,7 +292,6 @@ class HybridAgent1(AlphaBetaCaptureAgent):
         ghostsDist = [self.getMazeDistance(myPos, ghost.getPosition()) for ghost in ghosts]
         invaders = [a for a in enemies if a.isPacman and a.getPosition() != None]
         defendingFlag = self.getFlagsYouAreDefending(gameState)
-
         #agentMode define in the beginning
         if myState.ownFlag:
             agentMode[self.index] = mode.ownFlag
@@ -300,14 +299,15 @@ class HybridAgent1(AlphaBetaCaptureAgent):
         if agentMode[self.index] == mode.ownFlag:
             dists = [self.getMazeDistance(myPos, a.getPosition()) for a in ghosts]
             if dists:
-                feature = min(dists)
+                feature = min(dists)+1
                 score += feature * 5
             if foodMazeDist:
-                feature = 1.0/min(foodMazeDist)
+                feature = 1.0/(min(foodMazeDist)+1)
                 score+=feature
         if self.getOwnFlagOpponent(gameState) != None and agentMode[self.index] != mode.ownFlag:
-            print dir(self.getOwnFlagOpponent(gameState))    
-            feature = 1.0/self.getMazeDistance(myPos, self.getOwnFlagOpponent(gameState)[0])
+#           feature = 1.0/(self.getMazeDistance(myPos, self.getOwnFlagOpponent(gameState)[0])+1)
+            dists = [self.getMazeDistance(myPos, a.getPosition()) for a in invaders]
+            feature = 1.0/(min(dists)+1)
             score+=feature*10
 
         if agentMode[self.index] == mode.defend:
@@ -335,13 +335,13 @@ class HybridAgent1(AlphaBetaCaptureAgent):
                 score+=feature * 5
             else:
                 if self.getFlags(gameState):
-                    feature = 1.0/self.getMazeDistance(myPos, self.getFlags(gameState)[0])
+                    feature = 1.0/(self.getMazeDistance(myPos, self.getFlags(gameState)[0])+1)
                     score+=feature*5
                 if capsulesDist:
-                    feature = 1.0/min(capsulesDist)
+                    feature = 1.0/(min(capsulesDist)+1)
                     score += feature * 3
                 if foodMazeDist:
-                    feature = 1.0/min(foodMazeDist)
+                    feature = 1.0/(min(foodMazeDist)+1)
                     score += feature
                 if (gameState.getScore()>0 and self.getTeam(gameState)[0]==0) or (gameState.getScore()<0 and self.getTeam(gameState)[0]==1):
                     agentMode[self.index] = mode.defend
