@@ -38,7 +38,7 @@ class mode:
     attack = 2
     ownFlag = 3
     aggressive = 4
-agentMode = [mode.defend,mode.defend,mode.defend,mode.defend,mode.defend,mode.defend]
+agentMode = [mode.attack,mode.defend,mode.defend,mode.defend,mode.defend,mode.attack]
 #agentMode = [mode.attack,mode.attack,mode.attack,mode.attack,mode.attack,mode.attack]
 
 def createTeam(firstIndex, secondIndex, thirdIndex, isRed,
@@ -77,7 +77,8 @@ class AlphaBetaCaptureAgent(CaptureAgent):
         #self.defense_pos=[(28,10),(21,12),(15,7),(16,8),(10,3),(19,3)]
         self.death=[0,0,0,0,0,0]
         self.dead_road=[(28,10),(24,6)]
- 
+        self.must_eat = [(18,14),(),(),(),(),(13,1)]
+        self.try_attack = [False,False,False,False,False,False]
     def Max_Self(self,gameState,depth,alpha,beta):
         if depth == 0:
           return {"score":self.evaluationFunction(gameState),"action":"Self"}
@@ -307,31 +308,22 @@ class HybridAgent1(AlphaBetaCaptureAgent):
         elif agentMode[self.index] == mode.defend:
             #changing to attack mode if our two ghost are defending three pacman
             if sum(inEye) == 3 and inEye[self.index] == 0:
-                print 'modeChange'
                 if self.getFlags(gameState):
                     feature = 1.0/self.getMazeDistance(myPos, self.getFlags(gameState)[0])
                     score+=feature*2
                 feature = 1.0/min(foodMazeDis)
                 score+=feature
                 agentMode[self.index] == mode.attack
-            elif len(invaders) > 0:
                 #check whether the flag is eaten
                 #our flag is eaten, chase the opponent who own the flag
-                if self.getOwnFlagOpponent(gameState) != None:
-                    feature = 1.0/self.getMazeDistance(myPos, self.getOwnFlagOpponent(gameState))
-                    score+=feature*10
-                elif inEye[self.index] > 0:
-                    #if i see one, chase
-                    dists = [self.getMazeDistance(myPos, a.getPosition()) for a in invaders]
-                    feature = 1.0/(min(dists)+1)
-                    score +=feature*5
-                elif myPos != self.defense_pos[self.index]: # get to defense point
-                    feature = 1.0/(self.getMazeDistance(myPos,self.defense_pos[self.index])+1)
-                    score+=feature * 2
-                elif myPos == self.defense_pos[self.index]: # stay
-                    feature = 1
-                    score+=feature * 2
-                    
+            elif self.getOwnFlagOpponent(gameState) != None:
+                feature = 1.0/self.getMazeDistance(myPos, self.getOwnFlagOpponent(gameState))
+                score+=feature*10
+            elif len(invaders) > 0 and inEye[self.index] > 0:
+                #if i see one, chase
+                dists = [self.getMazeDistance(myPos, a.getPosition()) for a in invaders]
+                feature = 1.0/(min(dists)+1)
+                score +=feature*5
             elif myPos != self.defense_pos[self.index]: # get to defense point
                 feature = 1.0/(self.getMazeDistance(myPos,self.defense_pos[self.index])+1)
                 score+=feature * 2
@@ -340,15 +332,28 @@ class HybridAgent1(AlphaBetaCaptureAgent):
                 score+=feature * 2
             #if score is Lose, changing to attack mode(? together and attack specific entry
             #else:
+#           print self.index,inEye[self.index]
+            if len(invaders) == sum(inEye) and inEye[self.index] == 0:
+                agentMode[self.index] = mode.attack
+                self.try_attack[self.index] = True
+                
 
         elif agentMode[self.index] == mode.attack:
+            if self.index == 0:
+                print agentMode[self.index]
+            if self.must_eat[self.index] in foodList:
+                feature = 1.0/self.getMazeDistance(myPos,self.must_eat[self.index])
+                score+=feature * 5
             #draw or win(positive score and isRed OR negative score and isBlue)
-            if self.getScore(gameState) == 0 or (self.getScore(gameState)>0 and self.getTeam(gameState)[0]==0) or (self.getScore(gameState)<0 and self.getTeam(gameState)[0]==1):
+#           elif not self.try_attack[self.index] and (gameState.getScore() == 0 or (gameState.getScore()>0 and self.getTeam(gameState)[0]==0) or (gameState.getScore()<0 and self.getTeam(gameState)[0]==1)):
+            elif (gameState.getScore() == 0 or (gameState.getScore()>0 and self.getTeam(gameState)[0]==0) or (gameState.getScore()<0 and self.getTeam(gameState)[0]==1)):
+
                 feature = 1.0/(self.getMazeDistance(myPos,self.defense_pos[self.index])+1)
                 score+=feature * 2
-                agentMode[self.index] == mode.defend
+                agentMode[self.index] = mode.defend
             #lose state
             else:
+
                 #no one chasing
                 if len(ghosts) == 0:
                     if self.getFlags(gameState):
