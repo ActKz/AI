@@ -38,8 +38,8 @@ class mode:
     attack = 2
     ownFlag = 3
     aggressive = 4
-#agentMode = [mode.defend,mode.defend,mode.defend,mode.defend,mode.defend,mode.defend]
-agentMode = [mode.attack,mode.attack,mode.attack,mode.attack,mode.attack,mode.attack]
+agentMode = [mode.defend,mode.defend,mode.defend,mode.defend,mode.defend,mode.defend]
+#agentMode = [mode.attack,mode.attack,mode.attack,mode.attack,mode.attack,mode.attack]
 
 def createTeam(firstIndex, secondIndex, thirdIndex, isRed,
                  first = 'HybridAgent1', second = 'HybridAgent1',
@@ -308,8 +308,9 @@ class HybridAgent1(AlphaBetaCaptureAgent):
             #changing to attack mode if our two ghost are defending three pacman
             if sum(inEye) == 3 and inEye[self.index] == 0:
                 print 'modeChange'
-                feature = 1.0/self.getMazeDistance(myPos, self.getFlags(gameState))
-                score+=feature*2
+                if self.getFlags(gameState):
+                    feature = 1.0/self.getMazeDistance(myPos, self.getFlags(gameState)[0])
+                    score+=feature*2
                 feature = 1.0/min(foodMazeDis)
                 score+=feature
                 agentMode[self.index] == mode.attack
